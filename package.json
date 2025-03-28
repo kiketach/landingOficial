@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^7.0.2",
+    "cssnano": "^7.0.6",
+    "postcss-cli": "^11.0.1"
+  },
+  "dependencies": {
+    "firebase": "^11.5.0"
+  }
+}
