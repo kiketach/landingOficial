@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             console.log('Usuario autenticado:', user);
- } catch (error) {
+        } catch (error) {
             console.error('Error al iniciar sesión con Google:', error);
         }
     });
@@ -185,37 +185,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Navbar shrink function
-    const navbarShrink = () => {
-        const navbarCollapsible = document.body.querySelector('#mainNav');
-        if (!navbarCollapsible) return;
-        if (window.scrollY === 0) {
-            navbarCollapsible.classList.remove('navbar-shrink');
-        } else {
-            navbarCollapsible.classList.add('navbar-shrink');
-        }
-    };
+    // Manejo de los productos seleccionados desde las zapatillas
+    document.querySelectorAll('.portfolio-item').forEach((item) => {
+        item.addEventListener('click', function () {
+            const title = this.getAttribute('data-title');
+            const description = this.getAttribute('data-description');
+            const images = this.getAttribute('data-images').split(',');
 
-    navbarShrink();
-    document.addEventListener('scroll', navbarShrink);
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalDescription').textContent = description;
 
-    const mainNav = document.body.querySelector('#mainNav');
-    if (mainNav) {
-        new bootstrap.ScrollSpy(document.body, {
-            target: '#mainNav',
-            rootMargin: '0px 0px -40%',
-        });
-    }
+            const carouselItems = document.getElementById('carouselItems');
+            carouselItems.innerHTML = '';
 
-    const navbarToggler = document.body.querySelector('.navbar-toggler');
-    const responsiveNavItems = [].slice.call(
-        document.querySelectorAll('#navbarResponsive .nav-link')
-    );
-    responsiveNavItems.forEach((responsiveNavItem) => {
-        responsiveNavItem.addEventListener('click', () => {
-            if (window.getComputedStyle(navbarToggler).display !== 'none') {
-                navbarToggler.click();
-            }
+            images.forEach((image, index) => {
+                const carouselItem = document.createElement('div');
+                carouselItem.classList.add('carousel-item');
+                if (index === 0) carouselItem.classList.add('active');
+
+                const img = document.createElement('img');
+                img.src = `assets/img/portfolio/${image}`;
+                img.alt = title;
+                img.classList.add('d-block', 'w-100');
+
+                carouselItem.appendChild(img);
+                carouselItems.appendChild(carouselItem);
+            });
+
+            const modalFooter = document.getElementById('modalFooter');
+            modalFooter.innerHTML = '';
+
+            const button = document.createElement('button');
+            button.textContent = 'Seleccionar';
+            button.classList.add('btn', 'btn-dark', 'mt-3');
+            button.addEventListener('click', () => {
+                const producto = {
+                    title: title,
+                    image: `assets/img/portfolio/${images[0]}`,
+                    cantidad: 1
+                };
+                agregarProductoAlCarrito(producto);
+            });
+
+            modalFooter.appendChild(button);
+
+            const modalElement = document.getElementById('portfolioModal');
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.show();
         });
     });
 });
