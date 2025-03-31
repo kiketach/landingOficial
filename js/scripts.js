@@ -107,50 +107,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Manejo de los productos seleccionados desde las zapatillas
   document.querySelectorAll('.portfolio-item').forEach((item) => {
-      item.addEventListener('click', function () {
-          const title = this.getAttribute('data-title');
-          const description = this.getAttribute('data-description');
-          const images = this.getAttribute('data-images').split(',');
+    item.addEventListener('click', function () {
+        const title = this.getAttribute('data-title');
+        const description = this.getAttribute('data-description');
+        const images = this.getAttribute('data-images').split(',');
 
-          document.getElementById('modalTitle').textContent = title;
-          document.getElementById('modalDescription').textContent = description;
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalDescription').textContent = description;
 
-          const carouselItems = document.getElementById('carouselItems');
-          carouselItems.innerHTML = '';
+        const carouselItems = document.getElementById('carouselItems');
+        carouselItems.innerHTML = '';
 
-          images.forEach((image, index) => {
-              const carouselItem = document.createElement('div');
-              carouselItem.classList.add('carousel-item');
-              if (index === 0) carouselItem.classList.add('active');
+        images.forEach((image, index) => {
+            const carouselItem = document.createElement('div');
+            carouselItem.classList.add('carousel-item');
+            if (index === 0) carouselItem.classList.add('active');
 
-              const img = document.createElement('img');
-              img.src = `assets/img/portfolio/${image}`;
-              img.alt = title;
-              img.classList.add('d-block', 'w-100');
+            const img = document.createElement('img');
+            img.src = `assets/img/portfolio/${image}`;
+            img.alt = title;
+            img.classList.add('d-block', 'w-100');
 
-              const button = document.createElement('button');
-              button.textContent = 'Seleccionar';
-              button.classList.add('btn', 'btn-dark', 'mt-3');
-              button.addEventListener('click', () => {
-                  carrito.push({ title, image });
-                  actualizarCarrito();
-                  showSuccessModal();
-              });
+            const button = document.createElement('button');
+            button.textContent = 'Seleccionar';
+            button.classList.add('btn', 'btn-dark', 'mt-3');
+            button.addEventListener('click', () => {
+                const producto = {
+                    title: title,
+                    image: `assets/img/portfolio/${image}`,
+                    cantidad: 1
+                };
+                agregarProductoAlCarrito(producto); // Llama a la función para agregar al carrito
+            });
 
-              const container = document.createElement('div');
-              container.classList.add('text-center');
-              container.appendChild(img);
-              container.appendChild(button);
+            const container = document.createElement('div');
+            container.classList.add('text-center');
+            container.appendChild(img);
+            container.appendChild(button);
 
-              carouselItem.appendChild(container);
-              carouselItems.appendChild(carouselItem);
-          });
+            carouselItem.appendChild(container);
+            carouselItems.appendChild(carouselItem);
+        });
 
-          const modalElement = document.getElementById('portfolioModal');
-          const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-          modal.show();
-      });
-  });
+        const modalElement = document.getElementById('portfolioModal');
+        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        modal.show();
+    });
+});
+});
 
   // Función para mostrar el modal de éxito
   const showSuccessModal = () => {
@@ -166,7 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (backdrop) backdrop.remove();
       });
   }
-});
 
 //INICIO DE SESION
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
