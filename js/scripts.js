@@ -225,20 +225,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Iniciar sesión con Google
-    loginButton.addEventListener('click', async () => {
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            console.log('Usuario autenticado:', user);
-            alert(`¡Bienvenido, ${user.displayName}!`);
-        } catch (error) {
-            console.error('Error al iniciar sesión con Google:', error);
-            alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
-        }
-    });
+  // Iniciar sesión con Google
+loginButton.addEventListener('click', async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        console.log('Usuario autenticado:', user);
 
+        // Cierra el modal de inicio de sesión
+        const loginModal = document.getElementById('loginModal'); // Selecciona el modal
+        const modalInstance = bootstrap.Modal.getInstance(loginModal); // Obtén la instancia del modal
+        modalInstance.hide(); // Cierra el modal
+    } catch (error) {
+        console.error('Error al iniciar sesión con Google:', error);
+        alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
+    }
+});
     // Cerrar sesión
     logoutButton.addEventListener('click', async () => {
         try {
@@ -283,6 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para guardar el carrito en Firestore
     async function guardarCarritoEnFirestore(uid, carrito) {
         try {
+            console.log("Guardando carrito para el usuario:", uid);
+            console.log("Datos del carrito:", carrito);
             const carritoRef = doc(db, "carritos", uid);
             await setDoc(carritoRef, {
                 items: carrito,
@@ -294,16 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Función para cargar el carrito desde Firestore
     async function cargarCarritoDesdeFirestore(uid) {
         try {
+            console.log("Cargando carrito para el usuario:", uid);
             const carritoRef = doc(db, "carritos", uid);
             const carritoSnap = await getDoc(carritoRef);
-
+    
             if (carritoSnap.exists()) {
                 const data = carritoSnap.data();
                 console.log("Carrito cargado desde Firestore:", data.items);
-                return data.items; // Devuelve los items del carrito
+                return data.items;
             } else {
                 console.log("No hay carrito guardado para este usuario.");
                 return [];
