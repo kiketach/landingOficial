@@ -1,8 +1,3 @@
-/// Importa Firebase desde el CDN como módulos ES6
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
-
-
 /// Accion del NavBar
 document.addEventListener('DOMContentLoaded', () => {
   // Navbar shrink function
@@ -174,6 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 //INICIO DE SESION
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 
 // Configuración de Firebase
 const firebaseConfig = {
