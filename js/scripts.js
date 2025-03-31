@@ -188,47 +188,55 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Referencias a los botones de inicio y cierre de sesión
-const loginButton = document.getElementById('loginButton'); // Botón de iniciar sesión
-const logoutButton = document.getElementById('logoutButton'); // Botón de cerrar sesión
+document.addEventListener('DOMContentLoaded', () => {
+    // Referencias a los botones de inicio y cierre de sesión
+    const loginButton = document.getElementById('loginButton'); // Botón de iniciar sesión
+    const logoutButton = document.getElementById('logoutButton'); // Botón de cerrar sesión
 
-// Detecta el estado de autenticación al cargar la página
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        // Si el usuario está autenticado, muestra su nombre en el botón
-        loginButton.textContent = `¡Hola, ${user.displayName}!`;
-        logoutButton.classList.remove('d-none'); // Muestra el botón de cerrar sesión
-    } else {
-        // Si no hay usuario autenticado, muestra "Iniciar Sesión"
-        loginButton.textContent = 'Iniciar Sesión';
-        logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
+    // Verifica si los botones existen en el DOM
+    if (!loginButton || !logoutButton) {
+        console.error('Los botones de inicio o cierre de sesión no se encontraron en el DOM.');
+        return;
     }
-});
 
-// Iniciar sesión con Google
-loginButton.addEventListener('click', async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        console.log('Usuario autenticado:', user);
-        alert(`¡Bienvenido, ${user.displayName}!`);
-    } catch (error) {
-        console.error('Error al iniciar sesión con Google:', error);
-        alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
-    }
-});
+    // Detecta el estado de autenticación al cargar la página
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Si el usuario está autenticado, muestra su nombre en el botón
+            loginButton.textContent = `¡Hola, ${user.displayName}!`;
+            logoutButton.classList.remove('d-none'); // Muestra el botón de cerrar sesión
+        } else {
+            // Si no hay usuario autenticado, muestra "Iniciar Sesión"
+            loginButton.textContent = 'Iniciar Sesión';
+            logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
+        }
+    });
 
-// Cerrar sesión
-logoutButton.addEventListener('click', async () => {
-    try {
-        await signOut(auth);
-        alert('Has cerrado sesión exitosamente.');
-        // Actualiza la UI
-        loginButton.textContent = 'Iniciar Sesión';
-        logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
-    } catch (error) {
-        console.error('Error al cerrar sesión:', error);
-        alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
-    }
-});
+    // Iniciar sesión con Google
+    loginButton.addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            console.log('Usuario autenticado:', user);
+            alert(`¡Bienvenido ${user.displayName}!`);
+        } catch (error) {
+            console.error('Error al iniciar sesión con Google:', error);
+            alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
+        }
+    });
 
+    // Cerrar sesión
+    logoutButton.addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            alert('Has cerrado sesión exitosamente.');
+            // Actualiza la UI
+            loginButton.textContent = 'Iniciar Sesión';
+            logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
+        }
+    });
+});
