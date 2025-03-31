@@ -246,7 +246,6 @@ loginButton.addEventListener('click', async () => {
     logoutButton.addEventListener('click', async () => {
         try {
             await signOut(auth);
-            alert('Has cerrado sesión exitosamente.');
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
             alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
@@ -286,12 +285,10 @@ loginButton.addEventListener('click', async () => {
     // Función para guardar el carrito en Firestore
     async function guardarCarritoEnFirestore(uid, carrito) {
         try {
-            console.log("Guardando carrito para el usuario:", uid);
-            console.log("Datos del carrito:", carrito);
-            const carritoRef = doc(db, "carritos", uid);
+            const carritoRef = doc(db, "carritos", uid); // Referencia al documento del usuario
             await setDoc(carritoRef, {
-                items: carrito,
-                lastUpdated: new Date()
+                items: carrito, // Guarda los productos del carrito
+                lastUpdated: new Date() // Fecha de la última actualización
             });
             console.log("Carrito guardado en Firestore");
         } catch (error) {
@@ -308,7 +305,7 @@ loginButton.addEventListener('click', async () => {
             if (carritoSnap.exists()) {
                 const data = carritoSnap.data();
                 console.log("Carrito cargado desde Firestore:", data.items);
-                return data.items;
+                return data.items; // Devuelve los items del carrito
             } else {
                 console.log("No hay carrito guardado para este usuario.");
                 return [];
@@ -321,10 +318,16 @@ loginButton.addEventListener('click', async () => {
 
     // Ejemplo: Agregar un producto al carrito
     function agregarProductoAlCarrito(producto) {
+        console.log("Producto agregado al carrito:", producto); // Verifica el producto
         carrito.push(producto);
+        console.log("Carrito actualizado:", carrito); // Verifica el carrito actualizado
         actualizarCarritoUI(carrito);
+    
         if (auth.currentUser) {
-            guardarCarritoEnFirestore(auth.currentUser.uid, carrito); // Guarda el carrito en Firestore
+            console.log("Guardando carrito en Firestore para el usuario:", auth.currentUser.uid);
+            guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
+        } else {
+            console.warn("El usuario no está autenticado. No se puede guardar el carrito.");
         }
     }
 });
