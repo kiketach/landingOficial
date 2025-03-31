@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 
-
+/// Accion del NavBar
 document.addEventListener('DOMContentLoaded', () => {
   // Navbar shrink function
   const navbarShrink = () => {
@@ -15,11 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   };
 
-  // Shrink the navbar on load and scroll
   navbarShrink();
   document.addEventListener('scroll', navbarShrink);
-
-  // Activate Bootstrap scrollspy on the main nav element
   const mainNav = document.body.querySelector('#mainNav');
   if (mainNav) {
       new bootstrap.ScrollSpy(document.body, {
@@ -27,8 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
           rootMargin: '0px 0px -40%',
       });
   }
-
-  // Collapse responsive navbar when toggler is visible
   const navbarToggler = document.body.querySelector('.navbar-toggler');
   const responsiveNavItems = [].slice.call(
       document.querySelectorAll('#navbarResponsive .nav-link')
@@ -178,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 //INICIO DE SESION
+
 // Configuración de Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
@@ -193,9 +189,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// Referencias a los botones de inicio y cierre de sesión
+const loginButton = document.getElementById('loginButton'); // Botón de iniciar sesión
+const logoutButton = document.getElementById('logoutButton'); // Botón de cerrar sesión
+
+// Detecta el estado de autenticación al cargar la página
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Si el usuario está autenticado, muestra su nombre en el botón
+        loginButton.textContent = `¡Hola, ${user.displayName}!`;
+        logoutButton.classList.remove('d-none'); // Muestra el botón de cerrar sesión
+    } else {
+        // Si no hay usuario autenticado, muestra "Iniciar Sesión"
+        loginButton.textContent = 'Iniciar Sesión';
+        logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
+    }
+});
+
 // Iniciar sesión con Google
-const googleLogin = document.getElementById('googleLogin');
-googleLogin.addEventListener('click', async () => {
+loginButton.addEventListener('click', async () => {
     const provider = new GoogleAuthProvider();
     try {
         const result = await signInWithPopup(auth, provider);
@@ -207,3 +219,18 @@ googleLogin.addEventListener('click', async () => {
         alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
     }
 });
+
+// Cerrar sesión
+logoutButton.addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        alert('Has cerrado sesión exitosamente.');
+        // Actualiza la UI
+        loginButton.textContent = 'Iniciar Sesión';
+        logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+        alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
+    }
+});
+

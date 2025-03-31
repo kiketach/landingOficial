@@ -647,7 +647,7 @@ button:not(:disabled),
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 90vh;
   }
 }
 #modalCarousel {
@@ -663,10 +663,19 @@ button:not(:disabled),
 .carousel-control-next-icon {
   filter: invert(1);
 }
-.portfolio-modal .modal-dialog {
-    max-width: 800px;
-    margin: auto;
+
+@media (max-width: 768px) {
+  .modal-dialog {
+      max-width: 90vw;
+      margin: auto;
+  }
+
+  .modal-content {
+      width: 100%; 
+  }
 }
+
+
 .portfolio-modal .modal-content {
     padding: 20px;
     border-radius: 10px;
@@ -1244,7 +1253,7 @@ header.masthead .masthead-subheading {
 
 #successModal .modal-body img {
   width: 200px; 
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 /* Tamaño de íconos de inicio sesion */
 .modal-body .btn i {
