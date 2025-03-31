@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //INICIO DE SESION
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -186,27 +187,39 @@ const firebaseConfig = {
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Variables globales
+let carrito = []; // Carrito de compras
 
 // Referencias a los botones de inicio y cierre de sesión
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencias a los botones de inicio y cierre de sesión
     const loginButton = document.getElementById('loginButton'); // Botón de iniciar sesión
     const logoutButton = document.getElementById('logoutButton'); // Botón de cerrar sesión
+    const carritoItems = document.getElementById('carritoItems'); // Contenedor del carrito
+    const cartCount = document.getElementById('cartCount'); // Contador del carrito
 
-    // Verifica si los botones existen en el DOM
     if (!loginButton || !logoutButton) {
         console.error('Los botones de inicio o cierre de sesión no se encontraron en el DOM.');
         return;
     }
 
     // Detecta el estado de autenticación al cargar la página
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // Si el usuario está autenticado, muestra su nombre en el botón
+            // Si el usuario está autenticado, carga el carrito desde Firestore
+            carrito = await cargarCarritoDesdeFirestore(user.uid);
+            actualizarCarritoUI(carrito);
+
+            // Actualiza la interfaz
             loginButton.textContent = `¡Hola, ${user.displayName}!`;
             logoutButton.classList.remove('d-none'); // Muestra el botón de cerrar sesión
         } else {
-            // Si no hay usuario autenticado, muestra "Iniciar Sesión"
+            // Si no hay usuario autenticado, limpia el carrito
+            carrito = [];
+            actualizarCarritoUI(carrito);
+
+            // Actualiza la interfaz
             loginButton.textContent = 'Iniciar Sesión';
             logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
         }
@@ -219,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             console.log('Usuario autenticado:', user);
-            alert(`¡Bienvenido ${user.displayName}!`);
+            alert(`¡Bienvenido, ${user.displayName}!`);
         } catch (error) {
             console.error('Error al iniciar sesión con Google:', error);
             alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
@@ -231,12 +244,82 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await signOut(auth);
             alert('Has cerrado sesión exitosamente.');
-            // Actualiza la UI
-            loginButton.textContent = 'Iniciar Sesión';
-            logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
             alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
         }
     });
+
+    // Función para actualizar la interfaz del carrito
+    function actualizarCarritoUI(carrito) {
+        carritoItems.innerHTML = ""; // Limpia el contenido actual
+        carrito.forEach((producto) => {
+            const li = document.createElement("li");
+            li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+            const itemContainer = document.createElement("div");
+            itemContainer.classList.add("d-flex", "align-items-center", "gap-3");
+
+            const img = document.createElement("img");
+            img.src = producto.image;
+            img.alt = producto.title;
+            img.style.width = "100px";
+            img.style.height = "100px";
+            img.style.objectFit = "cover";
+            img.classList.add("rounded");
+
+            const text = document.createElement("span");
+            text.textContent = producto.title;
+
+            itemContainer.appendChild(img);
+            itemContainer.appendChild(text);
+            li.appendChild(itemContainer);
+            carritoItems.appendChild(li);
+        });
+
+        cartCount.textContent = carrito.length; // Actualiza el contador del carrito
+    }
+
+    // Función para guardar el carrito en Firestore
+    async function guardarCarritoEnFirestore(uid, carrito) {
+        try {
+            const carritoRef = doc(db, "carritos", uid);
+            await setDoc(carritoRef, {
+                items: carrito,
+                lastUpdated: new Date()
+            });
+            console.log("Carrito guardado en Firestore");
+        } catch (error) {
+            console.error("Error al guardar el carrito en Firestore:", error);
+        }
+    }
+
+    // Función para cargar el carrito desde Firestore
+    async function cargarCarritoDesdeFirestore(uid) {
+        try {
+            const carritoRef = doc(db, "carritos", uid);
+            const carritoSnap = await getDoc(carritoRef);
+
+            if (carritoSnap.exists()) {
+                const data = carritoSnap.data();
+                console.log("Carrito cargado desde Firestore:", data.items);
+                return data.items; // Devuelve los items del carrito
+            } else {
+                console.log("No hay carrito guardado para este usuario.");
+                return [];
+            }
+        } catch (error) {
+            console.error("Error al cargar el carrito desde Firestore:", error);
+            return [];
+        }
+    }
+
+    // Ejemplo: Agregar un producto al carrito
+    function agregarProductoAlCarrito(producto) {
+        carrito.push(producto);
+        actualizarCarritoUI(carrito);
+        if (auth.currentUser) {
+            guardarCarritoEnFirestore(auth.currentUser.uid, carrito); // Guarda el carrito en Firestore
+        }
+    }
 });
