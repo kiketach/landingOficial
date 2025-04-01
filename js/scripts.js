@@ -38,70 +38,74 @@ document.addEventListener('DOMContentLoaded', () => {
     const carritoItems = document.getElementById('carritoItems');
     const vaciarCarritoBtn = document.getElementById('vaciarCarrito');
   
-          const actualizarCarrito = () => {
-          carritoItems.innerHTML = ''; // Limpia el contenido del carrito en el DOM
-          cartCount.textContent = carrito.length; // Actualiza el contador del carrito
-      
-          // Controla la visibilidad del botón "Vaciar Carrito"
-          if (carrito.length === 0) {
-              vaciarCarritoBtn.style.display = 'none'; // Oculta el botón si el carrito está vacío
-      
-              // Agrega un mensaje cuando el carrito esté vacío
-              const emptyMessage = document.createElement('div');
-              emptyMessage.classList.add('text-center', 'text-muted', 'mt-5'); // Estilo centrado y con margen superior
-              emptyMessage.textContent = 'Aquí se mostrarán las zapatillas que compres.';
-              carritoItems.appendChild(emptyMessage);
-      
-              console.log('Mensaje de carrito vacío agregado al DOM');
-          } else {
-              vaciarCarritoBtn.style.display = 'block'; // Muestra el botón si hay productos en el carrito
-      
-              // Agrega cada producto al carrito en el modal
-              carrito.forEach((producto, index) => {
-                  const li = document.createElement('li');
-                  li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-      
-                  const itemContainer = document.createElement('div');
-                  itemContainer.classList.add('d-flex', 'align-items-center', 'gap-3');
-      
-                  const img = document.createElement('img');
-                  img.src = `assets/img/portfolio/${producto.image}`;
-                  img.alt = producto.title;
-                  img.style.width = '100px';
-                  img.style.height = '100px';
-                  img.style.objectFit = 'cover';
-                  img.classList.add('rounded');
-      
-                  const text = document.createElement('span');
-                  text.textContent = producto.title;
-      
-                  const removeBtn = document.createElement('button');
-                  removeBtn.classList.add('btn-close');
-                  removeBtn.setAttribute('aria-label', 'Eliminar');
-                  removeBtn.addEventListener('click', () => {
-                      eliminarProducto(index);
-                  });
-      
-                  itemContainer.appendChild(img);
-                  itemContainer.appendChild(text);
-                  li.appendChild(itemContainer);
-                  li.appendChild(removeBtn);
-                  carritoItems.appendChild(li);
-              });
-          }
-      };
+    // Función para actualizar el carrito y la interfaz
+    const actualizarCarrito = async () => {
+        carritoItems.innerHTML = ''; // Limpia el contenido del carrito en el DOM
+        cartCount.textContent = carrito.length; // Actualiza el contador del carrito
+    
+        // Controla la visibilidad del botón "Vaciar Carrito"
+        if (carrito.length === 0) {
+            vaciarCarritoBtn.style.display = 'none'; // Oculta el botón si el carrito está vacío
+    
+            // Agrega un mensaje cuando el carrito esté vacío
+            const emptyMessage = document.createElement('div');
+            emptyMessage.classList.add('text-center', 'text-muted', 'mt-5');
+            emptyMessage.textContent = 'Aquí se mostrarán las zapatillas que compres.';
+            carritoItems.appendChild(emptyMessage);
+        } else {
+            vaciarCarritoBtn.style.display = 'block'; // Muestra el botón si hay productos en el carrito
+    
+            // Agrega cada producto al carrito en el modal
+            carrito.forEach((producto, index) => {
+                const li = document.createElement('li');
+                li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+    
+                const itemContainer = document.createElement('div');
+                itemContainer.classList.add('d-flex', 'align-items-center', 'gap-3');
+    
+                const img = document.createElement('img');
+                img.src = producto.image;
+                img.alt = producto.title;
+                img.style.width = '100px';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.classList.add('rounded');
+    
+                const text = document.createElement('span');
+                text.textContent = producto.title;
+    
+                const removeBtn = document.createElement('button');
+                removeBtn.classList.add('btn-close');
+                removeBtn.setAttribute('aria-label', 'Eliminar');
+                removeBtn.addEventListener('click', async () => {
+                    await eliminarProducto(index);
+                });
+    
+                itemContainer.appendChild(img);
+                itemContainer.appendChild(text);
+                li.appendChild(itemContainer);
+                li.appendChild(removeBtn);
+                carritoItems.appendChild(li);
+            });
+        }
+    
+        // Actualiza Firebase inmediatamente si hay un usuario autenticado
+        if (auth.currentUser) {
+            await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
+        }
+    };
   
     // Función para eliminar un producto del carrito
-    const eliminarProducto = (index) => {
+    const eliminarProducto = async (index) => {
         carrito.splice(index, 1);
-        actualizarCarrito();
+        await actualizarCarrito();
     };
   
     // Evento para vaciar el carrito
     if (vaciarCarritoBtn) {
-        vaciarCarritoBtn.addEventListener('click', () => {
+        vaciarCarritoBtn.addEventListener('click', async () => {
             carrito.length = 0;
-            actualizarCarrito();
+            await actualizarCarrito();
         });
     }
   
@@ -135,10 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Botón "Seleccionar" clickeado');
                     carrito.push({ title, image: `${image}` });
                     console.log('Carrito actualizado:', carrito);
-                    actualizarCarrito();
-                    if (auth.currentUser) {
-                        await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
-                    }
+                    await actualizarCarrito();
                     showSuccessModal();
                 });
   
