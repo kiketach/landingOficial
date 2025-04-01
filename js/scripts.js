@@ -131,9 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const button = document.createElement('button');
                 button.textContent = 'Seleccionar';
                 button.classList.add('btn', 'btn-dark', 'mt-3');
-                button.addEventListener('click', () => {
+                button.addEventListener('click', async () => {
+                    console.log('Botón "Seleccionar" clickeado');
                     carrito.push({ title, image });
+                    console.log('Carrito actualizado:', carrito);
                     actualizarCarrito();
+                    await guardarCarritoEnFirestore(); // Guarda el carrito en Firebase
                     showSuccessModal();
                 });
   
