@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.classList.add('btn', 'btn-dark', 'mt-3');
                 button.addEventListener('click', async () => {
                     console.log('Botón "Seleccionar" clickeado');
-                    carrito.push({ title, image: `${image}` });
+                    carrito.push({ title, image: `assets/img/portfolio/${image}` });
                     console.log('Carrito actualizado:', carrito);
                     await actualizarCarrito();
                     showSuccessModal();
