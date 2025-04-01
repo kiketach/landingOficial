@@ -132,42 +132,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 carouselItem.classList.add('carousel-item');
                 if (index === 0) carouselItem.classList.add('active');
 
-                // Crear contenedor principal con estructura de grid
-                const container = document.createElement('div');
-                container.classList.add('container', 'py-3');
+                const modalContent = document.createElement('div');
+                modalContent.classList.add('modal-content');
 
-                // Contenedor para la imagen
-                const imageContainer = document.createElement('div');
-                imageContainer.classList.add('text-center', 'mb-4');
-                
+                // Imagen
+                const imgContainer = document.createElement('div');
+                imgContainer.style.textAlign = 'center';
+                imgContainer.style.marginBottom = '15px';
+
                 const img = document.createElement('img');
                 img.src = `assets/img/portfolio/${image}`;
                 img.alt = title;
-                img.classList.add('img-fluid');
-                img.style.maxHeight = '300px';
-                img.style.objectFit = 'contain';
+                img.style.maxHeight = '220px';
+                img.style.width = 'auto';
                 
-                imageContainer.appendChild(img);
-                container.appendChild(imageContainer);
+                imgContainer.appendChild(img);
+                modalContent.appendChild(imgContainer);
 
-                // Contenedor para los selectores
-                const formContainer = document.createElement('div');
-                formContainer.classList.add('row', 'justify-content-center');
-                formContainer.style.maxWidth = '500px';
-                formContainer.style.margin = '0 auto';
+                // Contenedor de selección
+                const selectionContainer = document.createElement('div');
+                selectionContainer.style.maxWidth = '300px';
+                selectionContainer.style.margin = '0 auto';
+                selectionContainer.style.padding = '0 15px';
 
-                // Columna para talla
-                const tallaCol = document.createElement('div');
-                tallaCol.classList.add('col-md-6', 'mb-3');
+                // Talla
+                const tallaContainer = document.createElement('div');
+                tallaContainer.style.marginBottom = '15px';
 
                 const tallaLabel = document.createElement('label');
                 tallaLabel.textContent = 'Talla:';
-                tallaLabel.classList.add('form-label', 'fw-bold');
+                tallaLabel.style.display = 'block';
+                tallaLabel.style.marginBottom = '5px';
+                tallaLabel.style.fontWeight = 'bold';
 
                 const tallaSelect = document.createElement('select');
-                tallaSelect.classList.add('form-select', 'form-select-lg');
+                tallaSelect.className = 'form-select';
+                tallaSelect.style.height = '35px';
                 tallaSelect.innerHTML = `
                     <option value="" disabled selected>Selecciona talla</option>
+                    <option value="32">32</option>
+                    <option value="33">33</option>
+                    <option value="34">34</option>
+                    <option value="35">35</option>
                     <option value="36">36</option>
                     <option value="37">37</option>
                     <option value="38">38</option>
@@ -178,44 +184,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     <option value="43">43</option>
                 `;
 
-                tallaCol.appendChild(tallaLabel);
-                tallaCol.appendChild(tallaSelect);
+                tallaContainer.appendChild(tallaLabel);
+                tallaContainer.appendChild(tallaSelect);
+                selectionContainer.appendChild(tallaContainer);
 
-                // Columna para suela
-                const suelaCol = document.createElement('div');
-                suelaCol.classList.add('col-md-6', 'mb-3');
+                // Suela
+                const suelaContainer = document.createElement('div');
+                suelaContainer.style.marginBottom = '15px';
 
                 const suelaLabel = document.createElement('label');
                 suelaLabel.textContent = 'Suela:';
-                suelaLabel.classList.add('form-label', 'fw-bold');
+                suelaLabel.style.display = 'block';
+                suelaLabel.style.marginBottom = '5px';
+                suelaLabel.style.fontWeight = 'bold';
 
                 const suelaSelect = document.createElement('select');
-                suelaSelect.classList.add('form-select', 'form-select-lg');
+                suelaSelect.className = 'form-select';
+                suelaSelect.style.height = '35px';
                 suelaSelect.innerHTML = `
                     <option value="" disabled selected>Selecciona suela</option>
-                    <option value="natural">Natural</option>
-                    <option value="sintetica">Sintética</option>
-                    <option value="mixta">Mixta</option>
+                    <option value="Goma">Goma</option>
+                    <option value="Colores">Colores</option>
+                    <option value="Negra">Negra</option>
+                    <option value="Sintética>Sintética</option>
                 `;
 
-                suelaCol.appendChild(suelaLabel);
-                suelaCol.appendChild(suelaSelect);
+                suelaContainer.appendChild(suelaLabel);
+                suelaContainer.appendChild(suelaSelect);
+                selectionContainer.appendChild(suelaContainer);
 
-                // Agregar columnas al contenedor de formulario
-                formContainer.appendChild(tallaCol);
-                formContainer.appendChild(suelaCol);
-                container.appendChild(formContainer);
-
-                // Contenedor para el botón
+                // Botón
                 const buttonContainer = document.createElement('div');
-                buttonContainer.classList.add('text-center', 'mt-4');
+                buttonContainer.style.textAlign = 'center';
+                buttonContainer.style.marginTop = '15px';
 
                 const button = document.createElement('button');
-                button.textContent = 'Agregar al Carrito';
-                button.classList.add('btn', 'btn-primary', 'btn-lg', 'px-5');
+                button.textContent = 'Agregar al Carrito!';
+                button.className = 'btn btn-dark';
+                button.style.width = '100%';
+                button.style.height = '25px';
                 button.disabled = true;
 
-                // Habilitar/deshabilitar botón según selección
                 const validarSeleccion = () => {
                     button.disabled = !tallaSelect.value || !suelaSelect.value;
                 };
@@ -235,9 +244,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 buttonContainer.appendChild(button);
-                container.appendChild(buttonContainer);
+                selectionContainer.appendChild(buttonContainer);
+                modalContent.appendChild(selectionContainer);
 
-                carouselItem.appendChild(container);
+                carouselItem.appendChild(modalContent);
                 carouselItems.appendChild(carouselItem);
             });
   
