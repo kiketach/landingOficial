@@ -133,10 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.classList.add('btn', 'btn-dark', 'mt-3');
                 button.addEventListener('click', async () => {
                     console.log('Botón "Seleccionar" clickeado');
-                    carrito.push({ title, image });
+                    carrito.push({ title, image: `${image}` });
                     console.log('Carrito actualizado:', carrito);
                     actualizarCarrito();
-                    await guardarCarritoEnFirestore(); // Guarda el carrito en Firebase
+                    if (auth.currentUser) {
+                        await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
+                    }
                     showSuccessModal();
                 });
   
@@ -187,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
       measurementId: "G-XENSCPPQ18"
   };
   
-  // Inicializa Firebase
+// Inicializa Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -198,10 +200,10 @@ document.addEventListener('DOMContentLoaded', () => {
   /// Función para guardar el carrito en Firestore
 async function guardarCarritoEnFirestore(uid, carrito) {
     try {
-        const carritoRef = doc(db, "carritos", uid); // Referencia al documento del usuario
+        const carritoRef = doc(db, "carritos", uid);
         await setDoc(carritoRef, {
-            items: carrito, // Guarda los productos del carrito
-            lastUpdated: new Date() // Fecha de la última actualización
+            items: carrito,
+            lastUpdated: new Date()
         });
         console.log("Carrito guardado en Firestore");
     } catch (error) {
@@ -219,7 +221,7 @@ async function cargarCarritoDesdeFirestore(uid) {
         if (carritoSnap.exists()) {
             const data = carritoSnap.data();
             console.log("Carrito cargado desde Firestore:", data.items);
-            return data.items; // Devuelve los items del carrito
+            return data.items;
         } else {
             console.log("No hay carrito guardado para este usuario.");
             return [];
