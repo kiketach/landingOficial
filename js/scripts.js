@@ -138,16 +138,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.classList.add('d-block', 'w-100');
   
                 const container = document.createElement('div');
-                container.classList.add('text-center');
+                container.classList.add('text-center', 'p-3');
                 container.appendChild(img);
                 
                 // Agregar selectores de talla y suela
                 const selectContainer = document.createElement('div');
-                selectContainer.classList.add('mt-3', 'd-flex', 'justify-content-center', 'gap-3');
+                selectContainer.classList.add('mt-4', 'mb-3');
+                selectContainer.style.maxWidth = '400px';
+                selectContainer.style.margin = '0 auto';
                 
                 // Selector de talla
+                const tallaContainer = document.createElement('div');
+                tallaContainer.classList.add('mb-3');
+                
+                const tallaLabel = document.createElement('label');
+                tallaLabel.textContent = 'Talla:';
+                tallaLabel.classList.add('form-label');
+                
                 const tallaSelect = document.createElement('select');
-                tallaSelect.classList.add('form-select', 'w-auto');
+                tallaSelect.classList.add('form-select');
                 tallaSelect.innerHTML = `
                     <option value="" disabled selected>Selecciona talla</option>
                     <option value="36">36</option>
@@ -160,9 +169,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     <option value="43">43</option>
                 `;
                 
+                tallaContainer.appendChild(tallaLabel);
+                tallaContainer.appendChild(tallaSelect);
+                
                 // Selector de suela
+                const suelaContainer = document.createElement('div');
+                suelaContainer.classList.add('mb-3');
+                
+                const suelaLabel = document.createElement('label');
+                suelaLabel.textContent = 'Suela:';
+                suelaLabel.classList.add('form-label');
+                
                 const suelaSelect = document.createElement('select');
-                suelaSelect.classList.add('form-select', 'w-auto');
+                suelaSelect.classList.add('form-select');
                 suelaSelect.innerHTML = `
                     <option value="" disabled selected>Selecciona suela</option>
                     <option value="natural">Natural</option>
@@ -170,15 +189,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <option value="mixta">Mixta</option>
                 `;
                 
-                selectContainer.appendChild(tallaSelect);
-                selectContainer.appendChild(suelaSelect);
+                suelaContainer.appendChild(suelaLabel);
+                suelaContainer.appendChild(suelaSelect);
+                
+                selectContainer.appendChild(tallaContainer);
+                selectContainer.appendChild(suelaContainer);
                 container.appendChild(selectContainer);
                 
-                // Modificar el botón de seleccionar
+                // Botón de seleccionar
                 const button = document.createElement('button');
-                button.textContent = 'Seleccionar';
-                button.classList.add('btn', 'btn-dark', 'mt-3');
-                button.disabled = true; // Inicialmente deshabilitado
+                button.textContent = 'Agregar al Carrito';
+                button.classList.add('btn', 'btn-primary', 'btn-lg', 'mt-2');
+                button.disabled = true;
                 
                 // Habilitar/deshabilitar botón según selección
                 const validarSeleccion = () => {
@@ -202,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 container.appendChild(button);
-  
                 carouselItem.appendChild(container);
                 carouselItems.appendChild(carouselItem);
             });
