@@ -40,19 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Función para actualizar el carrito y la interfaz
     const actualizarCarrito = async () => {
-        carritoItems.innerHTML = ''; // Limpia el contenido del carrito en el DOM
-        cartCount.textContent = carrito.length; // Actualiza el contador del carrito
+        carritoItems.innerHTML = '';
+        cartCount.textContent = carrito.length;
     
         if (carrito.length === 0) {
-            // Mensaje cuando el carrito está vacío
             const emptyMessage = document.createElement('div');
             emptyMessage.classList.add('text-center', 'text-muted', 'mt-5');
             emptyMessage.textContent = 'Aquí se mostrarán las zapatillas que compres.';
             carritoItems.appendChild(emptyMessage);
         } else {
-            vaciarCarritoBtn.style.display = 'block'; // Muestra el botón si hay productos en el carrito
+            vaciarCarritoBtn.style.display = 'block';
     
-            // Agrega cada producto al carrito en el modal
             carrito.forEach((producto, index) => {
                 const li = document.createElement('li');
                 li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
@@ -68,8 +66,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.style.objectFit = 'cover';
                 img.classList.add('rounded');
     
-                const text = document.createElement('span');
-                text.textContent = producto.title;
+                const textContainer = document.createElement('div');
+                textContainer.classList.add('d-flex', 'flex-column');
+                
+                const titleText = document.createElement('span');
+                titleText.textContent = producto.title;
+                titleText.classList.add('fw-bold');
+                
+                const detailsText = document.createElement('span');
+                detailsText.textContent = `Talla: ${producto.talla} | Suela: ${producto.suela}`;
+                detailsText.classList.add('text-muted', 'small');
+                
+                textContainer.appendChild(titleText);
+                textContainer.appendChild(detailsText);
     
                 const removeBtn = document.createElement('button');
                 removeBtn.classList.add('btn-close');
@@ -79,14 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
     
                 itemContainer.appendChild(img);
-                itemContainer.appendChild(text);
+                itemContainer.appendChild(textContainer);
                 li.appendChild(itemContainer);
                 li.appendChild(removeBtn);
                 carritoItems.appendChild(li);
             });
         }
     
-        // Actualiza Firebase inmediatamente si hay un usuario autenticado
         if (auth.currentUser) {
             await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
         }
@@ -129,23 +137,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.alt = title;
                 img.classList.add('d-block', 'w-100');
   
+                const container = document.createElement('div');
+                container.classList.add('text-center');
+                container.appendChild(img);
+                
+                // Agregar selectores de talla y suela
+                const selectContainer = document.createElement('div');
+                selectContainer.classList.add('mt-3', 'd-flex', 'justify-content-center', 'gap-3');
+                
+                // Selector de talla
+                const tallaSelect = document.createElement('select');
+                tallaSelect.classList.add('form-select', 'w-auto');
+                tallaSelect.innerHTML = `
+                    <option value="" disabled selected>Selecciona talla</option>
+                    <option value="36">36</option>
+                    <option value="37">37</option>
+                    <option value="38">38</option>
+                    <option value="39">39</option>
+                    <option value="40">40</option>
+                    <option value="41">41</option>
+                    <option value="42">42</option>
+                    <option value="43">43</option>
+                `;
+                
+                // Selector de suela
+                const suelaSelect = document.createElement('select');
+                suelaSelect.classList.add('form-select', 'w-auto');
+                suelaSelect.innerHTML = `
+                    <option value="" disabled selected>Selecciona suela</option>
+                    <option value="natural">Natural</option>
+                    <option value="sintetica">Sintética</option>
+                    <option value="mixta">Mixta</option>
+                `;
+                
+                selectContainer.appendChild(tallaSelect);
+                selectContainer.appendChild(suelaSelect);
+                container.appendChild(selectContainer);
+                
+                // Modificar el botón de seleccionar
                 const button = document.createElement('button');
                 button.textContent = 'Seleccionar';
                 button.classList.add('btn', 'btn-dark', 'mt-3');
+                button.disabled = true; // Inicialmente deshabilitado
+                
+                // Habilitar/deshabilitar botón según selección
+                const validarSeleccion = () => {
+                    button.disabled = !tallaSelect.value || !suelaSelect.value;
+                };
+                
+                tallaSelect.addEventListener('change', validarSeleccion);
+                suelaSelect.addEventListener('change', validarSeleccion);
+                
                 button.addEventListener('click', async () => {
                     console.log('Botón "Seleccionar" clickeado');
                     carrito.push({ 
                         title, 
-                        image: image // Guardamos solo el nombre del archivo
+                        image: image,
+                        talla: tallaSelect.value,
+                        suela: suelaSelect.value
                     });
                     console.log('Carrito actualizado:', carrito);
                     await actualizarCarrito();
                     showSuccessModal();
                 });
-  
-                const container = document.createElement('div');
-                container.classList.add('text-center');
-                container.appendChild(img);
+                
                 container.appendChild(button);
   
                 carouselItem.appendChild(container);
@@ -309,8 +364,19 @@ document.addEventListener('DOMContentLoaded', () => {
             img.style.objectFit = "cover";
             img.classList.add("rounded");
 
-            const text = document.createElement("span");
-            text.textContent = producto.title;
+            const textContainer = document.createElement('div');
+            textContainer.classList.add('d-flex', 'flex-column');
+            
+            const titleText = document.createElement('span');
+            titleText.textContent = producto.title;
+            titleText.classList.add('fw-bold');
+            
+            const detailsText = document.createElement('span');
+            detailsText.textContent = `Talla: ${producto.talla} | Suela: ${producto.suela}`;
+            detailsText.classList.add('text-muted', 'small');
+            
+            textContainer.appendChild(titleText);
+            textContainer.appendChild(detailsText);
 
             const removeBtn = document.createElement('button');
             removeBtn.classList.add('btn-close');
@@ -320,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             itemContainer.appendChild(img);
-            itemContainer.appendChild(text);
+            itemContainer.appendChild(textContainer);
             li.appendChild(itemContainer);
             li.appendChild(removeBtn);
             carritoItems.appendChild(li);
