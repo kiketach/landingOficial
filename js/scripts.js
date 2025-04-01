@@ -220,8 +220,13 @@ async function cargarCarritoDesdeFirestore(uid) {
 
         if (carritoSnap.exists()) {
             const data = carritoSnap.data();
-            console.log("Carrito cargado desde Firestore:", data.items);
-            return data.items;
+            // Agregamos la ruta completa a las imágenes
+            const carritoConRutas = data.items.map(item => ({
+                ...item,
+                image: `assets/img/portfolio/${item.image}`
+            }));
+            console.log("Carrito cargado desde Firestore:", carritoConRutas);
+            return carritoConRutas;
         } else {
             console.log("No hay carrito guardado para este usuario.");
             return [];
@@ -304,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
             itemContainer.classList.add("d-flex", "align-items-center", "gap-3");
 
             const img = document.createElement("img");
-            img.src = producto.image;
+            img.src = producto.image; // Ya no necesitamos agregar la ruta aquí
             img.alt = producto.title;
             img.style.width = "100px";
             img.style.height = "100px";
