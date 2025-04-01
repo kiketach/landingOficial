@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemContainer.classList.add('d-flex', 'align-items-center', 'gap-3');
     
                 const img = document.createElement('img');
-                img.src = producto.image;
+                img.src = `assets/img/portfolio/${producto.image}`;
                 img.alt = producto.title;
                 img.style.width = '100px';
                 img.style.height = '100px';
@@ -134,7 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.classList.add('btn', 'btn-dark', 'mt-3');
                 button.addEventListener('click', async () => {
                     console.log('Botón "Seleccionar" clickeado');
-                    carrito.push({ title, image: `assets/img/portfolio/${image}` });
+                    carrito.push({ 
+                        title, 
+                        image: image // Guardamos solo el nombre del archivo
+                    });
                     console.log('Carrito actualizado:', carrito);
                     await actualizarCarrito();
                     showSuccessModal();
@@ -217,12 +220,7 @@ async function cargarCarritoDesdeFirestore(uid) {
 
         if (carritoSnap.exists()) {
             const data = carritoSnap.data();
-            // Asegurarse de que los productos tengan la ruta completa
-            const carritoConRutas = data.items.map(item => ({
-                ...item,
-                image: `assets/img/portfolio/${item.image}`
-            }));
-            return carritoConRutas; // Devuelve los items del carrito
+            return data.items; // Devolvemos los items tal cual están en Firestore
         } else {
             return []; // Si no hay carrito guardado, devuelve un array vacío
         }
@@ -296,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para actualizar la interfaz del carrito
     function actualizarCarritoUI(carrito) {
         carritoItems.innerHTML = ""; // Limpia el contenido actual
-        carrito.forEach((producto) => {
+        carrito.forEach((producto, index) => {
             const li = document.createElement("li");
             li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
 
@@ -304,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
             itemContainer.classList.add("d-flex", "align-items-center", "gap-3");
 
             const img = document.createElement("img");
-            img.src = producto.image; // Ya no necesitamos agregar la ruta aquí
+            img.src = `assets/img/portfolio/${producto.image}`; // Construimos la ruta completa
             img.alt = producto.title;
             img.style.width = "100px";
             img.style.height = "100px";
@@ -314,9 +312,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = document.createElement("span");
             text.textContent = producto.title;
 
+            const removeBtn = document.createElement('button');
+            removeBtn.classList.add('btn-close');
+            removeBtn.setAttribute('aria-label', 'Eliminar');
+            removeBtn.addEventListener('click', async () => {
+                await eliminarProducto(index);
+            });
+
             itemContainer.appendChild(img);
             itemContainer.appendChild(text);
             li.appendChild(itemContainer);
+            li.appendChild(removeBtn);
             carritoItems.appendChild(li);
         });
 
