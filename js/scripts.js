@@ -43,11 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
         carritoItems.innerHTML = ''; // Limpia el contenido del carrito en el DOM
         cartCount.textContent = carrito.length; // Actualiza el contador del carrito
     
-        // Controla la visibilidad del botón "Vaciar Carrito"
         if (carrito.length === 0) {
-            vaciarCarritoBtn.style.display = 'none'; // Oculta el botón si el carrito está vacío
-    
-            // Agrega un mensaje cuando el carrito esté vacío
+            // Mensaje cuando el carrito está vacío
             const emptyMessage = document.createElement('div');
             emptyMessage.classList.add('text-center', 'text-muted', 'mt-5');
             emptyMessage.textContent = 'Aquí se mostrarán las zapatillas que compres.';
@@ -98,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para eliminar un producto del carrito
     const eliminarProducto = async (index) => {
         carrito.splice(index, 1);
-        await actualizarCarrito();
+        await actualizarCarrito(); // Actualiza la interfaz y Firebase
     };
   
     // Evento para vaciar el carrito
@@ -215,22 +212,19 @@ async function guardarCarritoEnFirestore(uid, carrito) {
 // Función para cargar el carrito desde Firestore
 async function cargarCarritoDesdeFirestore(uid) {
     try {
-        console.log("Cargando carrito para el usuario:", uid);
         const carritoRef = doc(db, "carritos", uid);
         const carritoSnap = await getDoc(carritoRef);
 
         if (carritoSnap.exists()) {
             const data = carritoSnap.data();
-            // Agregamos la ruta completa a las imágenes
+            // Asegurarse de que los productos tengan la ruta completa
             const carritoConRutas = data.items.map(item => ({
                 ...item,
                 image: `assets/img/portfolio/${item.image}`
             }));
-            console.log("Carrito cargado desde Firestore:", carritoConRutas);
-            return carritoConRutas;
+            return carritoConRutas; // Devuelve los items del carrito
         } else {
-            console.log("No hay carrito guardado para este usuario.");
-            return [];
+            return []; // Si no hay carrito guardado, devuelve un array vacío
         }
     } catch (error) {
         console.error("Error al cargar el carrito desde Firestore:", error);
