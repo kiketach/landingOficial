@@ -312,14 +312,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Configuración de Firebase
   const firebaseConfig = {
-      apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
-      authDomain: "hat-trick-9319c.firebaseapp.com",
-      projectId: "hat-trick-9319c",
-      storageBucket: "hat-trick-9319c.firebasestorage.app",
-      messagingSenderId: "303428148607",
-      appId: "1:303428148607:web:84294bbe953e9911a64e4a",
-      measurementId: "G-XENSCPPQ18"
-  };
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID
+};
   
 // Inicializa Firebase
   const app = initializeApp(firebaseConfig);
