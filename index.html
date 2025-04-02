@@ -25,6 +25,15 @@
                 <a class="navbar-brand" href="#page-top">
                     <img src="./assets/img/Logo.png" alt="Logo Hat Trick" style="height: 40px;">
                 </a>
+                <!-- Botón de inicio de sesión para móvil -->
+                <div class="d-lg-none">
+                    <a id="loginButtonMobile" class="nav-link text-white me-3" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        Entrar
+                    </a>
+                    <a id="logoutButtonMobile" class="nav-link text-white me-3 d-none" href="#">
+                        Cerrar Sesión
+                    </a>
+                </div>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                     Menu
                     <i class="fas fa-bars ms-1"></i>
@@ -33,26 +42,25 @@
                     <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
                         <li class="nav-item"><a class="nav-link" href="#catalogo">Catálogo</a></li>
                         <li class="nav-item"><a class="nav-link" href="#portfolio">Habla con nosotros</a></li>
-                        <li class="nav-item">
-                            <!-- Botón de Iniciar Sesión -->
+                        <!-- Botón de Iniciar Sesión para desktop -->
+                        <li class="nav-item d-none d-lg-block">
                             <a id="loginButton" class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-                                Iniciar Sesión
+                                Entrar
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <!-- Botón de Cerrar Sesión -->
+                        <!-- Botón de Cerrar Sesión para desktop -->
+                        <li class="nav-item d-none d-lg-block">
                             <a id="logoutButton" class="nav-link d-none" href="#">
                                 Cerrar Sesión
                             </a>
                         </li>
                         <!-- Carrito en el navbar -->
                         <li class="nav-item">
-                            <!-- Enlace del carrito en el navbar -->
                             <a class="nav-link position-relative" href="#" data-bs-toggle="modal" data-bs-target="#carritoModal">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                              0
-                            </span>
+                                <i class="fas fa-shopping-cart"></i>
+                                <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    0
+                                </span>
                             </a>
                         </li>
                     </ul>

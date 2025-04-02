@@ -135,17 +135,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 const modalContent = document.createElement('div');
                 modalContent.classList.add('modal-content');
 
-                // Imagen
+                // Imagen con funcionalidad de ampliación
                 const imgContainer = document.createElement('div');
                 imgContainer.style.textAlign = 'center';
                 imgContainer.style.marginBottom = '15px';
+                imgContainer.style.cursor = 'pointer';
 
                 const img = document.createElement('img');
                 img.src = `assets/img/portfolio/${image}`;
                 img.alt = title;
                 img.style.maxHeight = '220px';
                 img.style.width = 'auto';
+                img.style.transition = 'transform 0.3s ease';
                 
+                // Agregar evento de clic para ampliar la imagen
+                img.addEventListener('click', () => {
+                    const modal = document.createElement('div');
+                    modal.style.position = 'fixed';
+                    modal.style.top = '0';
+                    modal.style.left = '0';
+                    modal.style.width = '100%';
+                    modal.style.height = '100%';
+                    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+                    modal.style.display = 'flex';
+                    modal.style.justifyContent = 'center';
+                    modal.style.alignItems = 'center';
+                    modal.style.zIndex = '9999';
+                    modal.style.cursor = 'pointer';
+
+                    const enlargedImg = document.createElement('img');
+                    enlargedImg.src = img.src;
+                    enlargedImg.style.maxWidth = '90%';
+                    enlargedImg.style.maxHeight = '90vh';
+                    enlargedImg.style.objectFit = 'contain';
+
+                    modal.appendChild(enlargedImg);
+                    document.body.appendChild(modal);
+
+                    // Cerrar al hacer clic en cualquier parte
+                    modal.addEventListener('click', () => {
+                        document.body.removeChild(modal);
+                    });
+                });
+
                 imgContainer.appendChild(img);
                 modalContent.appendChild(imgContainer);
 
@@ -331,12 +363,14 @@ async function cargarCarritoDesdeFirestore(uid) {
 
 // Resto del código dentro del bloque DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-    const loginButton = document.getElementById('loginButton'); // Botón de iniciar sesión
-    const logoutButton = document.getElementById('logoutButton'); // Botón de cerrar sesión
-    const carritoItems = document.getElementById('carritoItems'); // Contenedor del carrito
-    const cartCount = document.getElementById('cartCount'); // Contador del carrito
+    const loginButton = document.getElementById('loginButton');
+    const loginButtonMobile = document.getElementById('loginButtonMobile');
+    const logoutButton = document.getElementById('logoutButton');
+    const logoutButtonMobile = document.getElementById('logoutButtonMobile');
+    const carritoItems = document.getElementById('carritoItems');
+    const cartCount = document.getElementById('cartCount');
 
-    if (!loginButton || !logoutButton) {
+    if (!loginButton || !loginButtonMobile || !logoutButton || !logoutButtonMobile) {
         console.error('Los botones de inicio o cierre de sesión no se encontraron en el DOM.');
         return;
     }
@@ -349,46 +383,64 @@ document.addEventListener('DOMContentLoaded', () => {
             actualizarCarritoUI(carrito);
 
             // Actualiza la interfaz
-            loginButton.textContent = `¡Hola, ${user.displayName}!`;
-            logoutButton.classList.remove('d-none'); // Muestra el botón de cerrar sesión
+            const displayName = user.displayName || 'Usuario';
+            loginButton.textContent = `¡Hola, ${displayName}!`;
+            loginButtonMobile.textContent = `¡Hola, ${displayName}!`;
+            logoutButton.classList.remove('d-none');
+            logoutButtonMobile.classList.remove('d-none');
         } else {
             // Si no hay usuario autenticado, limpia el carrito
             carrito = [];
             actualizarCarritoUI(carrito);
 
             // Actualiza la interfaz
-            loginButton.textContent = 'Iniciar Sesión';
-            logoutButton.classList.add('d-none'); // Oculta el botón de cerrar sesión
+            loginButton.textContent = 'Entrar';
+            loginButtonMobile.textContent = 'Entrar';
+            logoutButton.classList.add('d-none');
+            logoutButtonMobile.classList.add('d-none');
         }
     });
 
-    // Iniciar sesión con Google
-    loginButton.addEventListener('click', async () => {
-        const provider = new GoogleAuthProvider();
+    // Función para manejar el inicio de sesión
+    const handleLogin = async (provider) => {
         try {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             console.log('Usuario autenticado:', user);
 
             // Cierra el modal de inicio de sesión
-            const loginModal = document.getElementById('loginModal'); // Selecciona el modal
-            const modalInstance = bootstrap.Modal.getInstance(loginModal); // Obtén la instancia del modal
-            modalInstance.hide(); // Cierra el modal
+            const loginModal = document.getElementById('loginModal');
+            const modalInstance = bootstrap.Modal.getInstance(loginModal);
+            modalInstance.hide();
         } catch (error) {
-            console.error('Error al iniciar sesión con Google:', error);
+            console.error('Error al iniciar sesión:', error);
             alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
         }
+    };
+
+    // Eventos de inicio de sesión
+    loginButton.addEventListener('click', () => {
+        const provider = new GoogleAuthProvider();
+        handleLogin(provider);
     });
 
-    // Cerrar sesión
-    logoutButton.addEventListener('click', async () => {
+    loginButtonMobile.addEventListener('click', () => {
+        const provider = new GoogleAuthProvider();
+        handleLogin(provider);
+    });
+
+    // Eventos de cierre de sesión
+    const handleLogout = async () => {
         try {
             await signOut(auth);
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
             alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
         }
-    });
+    };
+
+    logoutButton.addEventListener('click', handleLogout);
+    logoutButtonMobile.addEventListener('click', handleLogout);
 
     // Función para actualizar la interfaz del carrito
     function actualizarCarritoUI(carrito) {
