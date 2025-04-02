@@ -444,7 +444,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función para actualizar la interfaz del carrito
     function actualizarCarritoUI(carrito) {
+        const carritoItems = document.getElementById('carritoItems');
+        const cartCount = document.getElementById('cartCount');
+        
+        if (!carritoItems || !cartCount) return;
+
         carritoItems.innerHTML = ""; // Limpia el contenido actual
+        cartCount.textContent = carrito.length;
+
+        if (carrito.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.classList.add('text-center', 'text-muted', 'mt-5');
+            emptyMessage.textContent = 'Aquí se mostrarán las zapatillas que compres.';
+            carritoItems.appendChild(emptyMessage);
+            return;
+        }
+
         carrito.forEach((producto, index) => {
             const li = document.createElement("li");
             li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
@@ -453,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
             itemContainer.classList.add("d-flex", "align-items-center", "gap-3");
 
             const img = document.createElement("img");
-            img.src = `assets/img/portfolio/${producto.image}`; // Construimos la ruta completa
+            img.src = `assets/img/portfolio/${producto.image}`;
             img.alt = producto.title;
             img.style.width = "100px";
             img.style.height = "100px";
@@ -487,22 +502,14 @@ document.addEventListener('DOMContentLoaded', () => {
             li.appendChild(removeBtn);
             carritoItems.appendChild(li);
         });
-
-        cartCount.textContent = carrito.length; // Actualiza el contador del carrito
     }
 
-    // Ejemplo: Agregar un producto al carrito
-    function agregarProductoAlCarrito(producto) {
-        console.log("Producto agregado al carrito:", producto); // Verifica el producto
-        carrito.push(producto);
-        console.log("Carrito actualizado:", carrito); // Verifica el carrito actualizado
-        actualizarCarritoUI(carrito);
-
+    // Función para eliminar producto
+    async function eliminarProducto(index) {
+        carrito.splice(index, 1);
+        await actualizarCarritoUI(carrito);
         if (auth.currentUser) {
-            console.log("Guardando carrito en Firestore para el usuario:", auth.currentUser.uid);
-            guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
-        } else {
-            console.warn("El usuario no está autenticado. No se puede guardar el carrito.");
+            await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
         }
     }
 });
