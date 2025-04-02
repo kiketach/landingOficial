@@ -1,4 +1,4 @@
-/// Accion del NavBar
+// Accion del NavBar
 document.addEventListener('DOMContentLoaded', () => {
     // Navbar shrink function
     const navbarShrink = () => {
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
   
-    // Variables globales del carrito
+// Variables globales del carrito
     const carrito = [];
     const cartCount = document.getElementById('cartCount');
     const carritoItems = document.getElementById('carritoItems');
@@ -245,6 +245,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 suelaContainer.appendChild(suelaSelect);
                 selectionContainer.appendChild(suelaContainer);
 
+                // Personalización
+                const personalizacionContainer = document.createElement('div');
+                personalizacionContainer.style.marginBottom = '15px';
+
+                const nombreLabel = document.createElement('label');
+                nombreLabel.textContent = 'Nombre del Jugador:';
+                nombreLabel.style.display = 'block';
+                nombreLabel.style.marginBottom = '5px';
+                nombreLabel.style.fontWeight = 'bold';
+
+                const nombreInput = document.createElement('input');
+                nombreInput.type = 'text';
+                nombreInput.className = 'form-control';
+                nombreInput.placeholder = 'Ingresa el nombre';
+
+                const numeroLabel = document.createElement('label');
+                numeroLabel.textContent = 'Número del Jugador:';
+                numeroLabel.style.display = 'block';
+                numeroLabel.style.marginBottom = '5px';
+                numeroLabel.style.fontWeight = 'bold';
+
+                const numeroInput = document.createElement('input');
+                numeroInput.type = 'number';
+                numeroInput.className = 'form-control';
+                numeroInput.placeholder = 'Ingresa el número';
+
+                personalizacionContainer.appendChild(nombreLabel);
+                personalizacionContainer.appendChild(nombreInput);
+                personalizacionContainer.appendChild(numeroLabel);
+                personalizacionContainer.appendChild(numeroInput);
+                selectionContainer.appendChild(personalizacionContainer);
+
                 // Botón
                 const buttonContainer = document.createElement('div');
                 buttonContainer.style.textAlign = 'center';
@@ -263,13 +295,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 tallaSelect.addEventListener('change', validarSeleccion);
                 suelaSelect.addEventListener('change', validarSeleccion);
+                nombreInput.addEventListener('input', validarSeleccion);
+                numeroInput.addEventListener('input', validarSeleccion);
 
                 button.addEventListener('click', async () => {
                     carrito.push({ 
                         title, 
                         image: image,
                         talla: tallaSelect.value,
-                        suela: suelaSelect.value
+                        suela: suelaSelect.value,
+                        nombre: nombreInput.value,
+                        numero: numeroInput.value
                     });
                     await actualizarCarrito();
                     showSuccessModal();
@@ -291,8 +327,19 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Función para mostrar el modal de éxito
     const showSuccessModal = () => {
-        const modalTrigger = document.getElementById('successModalTrigger');
-        if (modalTrigger) modalTrigger.click();
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+        
+        // Cerrar el modal del catálogo
+        const catalogModal = bootstrap.Modal.getInstance(document.getElementById('portfolioModal'));
+        if (catalogModal) {
+            catalogModal.hide();
+        }
+        
+        // Cerrar automáticamente el modal de éxito después de 2 segundos
+        setTimeout(() => {
+            successModal.hide();
+        }, 2000);
     };
   
     // Limpieza del fondo del modal al cerrarlo
@@ -449,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!carritoItems || !cartCount) return;
 
-        carritoItems.innerHTML = ""; // Limpia el contenido actual
+        carritoItems.innerHTML = "";
         cartCount.textContent = carrito.length;
 
         if (carrito.length === 0) {
@@ -485,9 +532,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const detailsText = document.createElement('span');
             detailsText.textContent = `Talla: ${producto.talla} | Suela: ${producto.suela}`;
             detailsText.classList.add('text-muted', 'small');
+
+            const personalizacionText = document.createElement('span');
+            personalizacionText.textContent = `Nombre: ${producto.nombre || 'No especificado'} | Número: ${producto.numero || 'No especificado'}`;
+            personalizacionText.classList.add('text-muted', 'small');
             
             textContainer.appendChild(titleText);
             textContainer.appendChild(detailsText);
+            textContainer.appendChild(personalizacionText);
 
             const removeBtn = document.createElement('button');
             removeBtn.classList.add('btn-close');
