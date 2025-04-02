@@ -584,25 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const carritoItems = document.getElementById('carritoItems');
     const cartCount = document.getElementById('cartCount');
 
-    // Inicializar Facebook SDK
-    window.fbAsyncInit = function() {
-        FB.init({
-            appId: '29478692891744469',
-            cookie: true,
-            xfbml: true,
-            version: 'v18.0'
-        });
-    };
-
-    // Cargar SDK de Facebook
-    (function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) return;
-        js = d.createElement(s); js.id = id;
-        js.src = "https://connect.facebook.net/es_LA/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-
     if (!loginButton || !loginButtonMobile || !logoutButton || !logoutButtonMobile || !googleLoginBtn || !facebookLoginBtn) {
         console.error('Algunos botones no se encontraron en el DOM.');
         return;
@@ -661,70 +642,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Función para manejar el inicio de sesión con Facebook
-    const handleFacebookLogin = () => {
-        FB.login(function(response) {
-            if (response.status === 'connected') {
-                // El usuario está conectado a Facebook y a la app
-                FB.api('/me', {fields: 'name, email'}, function(response) {
-                    const displayName = response.name || 'Usuario';
-                    loginButton.textContent = `¡Hola, ${displayName}!`;
-                    loginButtonMobile.textContent = `¡Hola, ${displayName}!`;
-                    logoutButton.classList.remove('d-none');
-                    logoutButtonMobile.classList.remove('d-none');
-                    loginButton.removeAttribute('data-bs-toggle');
-                    loginButton.removeAttribute('data-bs-target');
-                    loginButtonMobile.removeAttribute('data-bs-toggle');
-                    loginButtonMobile.removeAttribute('data-bs-target');
-
-                    // Cerrar el modal de inicio de sesión
-                    const loginModal = document.getElementById('loginModal');
-                    const modalInstance = bootstrap.Modal.getInstance(loginModal);
-                    modalInstance.hide();
-                });
-            } else {
-                console.error('Error al iniciar sesión con Facebook');
-                alert('Hubo un error al iniciar sesión con Facebook. Por favor, intenta nuevamente.');
-            }
-        }, {scope: 'public_profile,email'});
-    };
-
-    // Función para manejar el cierre de sesión de Facebook
-    const handleFacebookLogout = () => {
-        FB.getLoginStatus(function(response) {
-            if (response.status === 'connected') {
-                FB.logout(function(response) {
-                    loginButton.textContent = 'Entrar';
-                    loginButtonMobile.textContent = 'Entrar';
-                    logoutButton.classList.add('d-none');
-                    logoutButtonMobile.classList.add('d-none');
-                    loginButton.setAttribute('data-bs-toggle', 'modal');
-                    loginButton.setAttribute('data-bs-target', '#loginModal');
-                    loginButtonMobile.setAttribute('data-bs-toggle', 'modal');
-                    loginButtonMobile.setAttribute('data-bs-target', '#loginModal');
-                });
-            }
-        });
-    };
-
-    // Eventos de inicio de sesión con Google (mantener Firebase)
+    // Eventos de inicio de sesión con Google
     googleLoginBtn.addEventListener('click', () => {
         const provider = new GoogleAuthProvider();
         handleLogin(provider);
     });
 
-    // Eventos de inicio de sesión con Facebook (directo)
-    facebookLoginBtn.addEventListener('click', handleFacebookLogin);
+    // Eventos de inicio de sesión con Facebook
+    facebookLoginBtn.addEventListener('click', () => {
+        const provider = new FacebookAuthProvider();
+        handleLogin(provider);
+    });
 
     // Eventos de cierre de sesión
-    logoutButton.addEventListener('click', () => {
-        handleFacebookLogout();
-        handleLogout(); // Mantener el cierre de sesión de Firebase para Google
-    });
-    logoutButtonMobile.addEventListener('click', () => {
-        handleFacebookLogout();
-        handleLogout(); // Mantener el cierre de sesión de Firebase para Google
-    });
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
+        }
+    };
+
+    logoutButton.addEventListener('click', handleLogout);
+    logoutButtonMobile.addEventListener('click', handleLogout);
 
     // Función para actualizar la interfaz del carrito
     function actualizarCarritoUI(carrito) {
