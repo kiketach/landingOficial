@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   //INICIO DE SESION
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
   
   // Configuración de Firebase
@@ -579,37 +579,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginButtonMobile = document.getElementById('loginButtonMobile');
     const logoutButton = document.getElementById('logoutButton');
     const logoutButtonMobile = document.getElementById('logoutButtonMobile');
+    const googleLoginBtn = document.getElementById('googleLogin');
+    const facebookLoginBtn = document.getElementById('facebookLogin');
     const carritoItems = document.getElementById('carritoItems');
     const cartCount = document.getElementById('cartCount');
 
-    if (!loginButton || !loginButtonMobile || !logoutButton || !logoutButtonMobile) {
-        console.error('Los botones de inicio o cierre de sesión no se encontraron en el DOM.');
+    if (!loginButton || !loginButtonMobile || !logoutButton || !logoutButtonMobile || !googleLoginBtn || !facebookLoginBtn) {
+        console.error('Algunos botones no se encontraron en el DOM.');
         return;
     }
 
     // Detecta el estado de autenticación al cargar la página
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // Si el usuario está autenticado, carga el carrito desde Firestore
             carrito = await cargarCarritoDesdeFirestore(user.uid);
             actualizarCarritoUI(carrito);
 
-            // Actualiza la interfaz
             const displayName = user.displayName || 'Usuario';
             loginButton.textContent = `¡Hola, ${displayName}!`;
             loginButtonMobile.textContent = `¡Hola, ${displayName}!`;
             logoutButton.classList.remove('d-none');
             logoutButtonMobile.classList.remove('d-none');
+            loginButton.removeAttribute('data-bs-toggle');
+            loginButton.removeAttribute('data-bs-target');
+            loginButtonMobile.removeAttribute('data-bs-toggle');
+            loginButtonMobile.removeAttribute('data-bs-target');
         } else {
-            // Si no hay usuario autenticado, limpia el carrito
             carrito = [];
             actualizarCarritoUI(carrito);
 
-            // Actualiza la interfaz
             loginButton.textContent = 'Entrar';
             loginButtonMobile.textContent = 'Entrar';
             logoutButton.classList.add('d-none');
             logoutButtonMobile.classList.add('d-none');
+            loginButton.setAttribute('data-bs-toggle', 'modal');
+            loginButton.setAttribute('data-bs-target', '#loginModal');
+            loginButtonMobile.setAttribute('data-bs-toggle', 'modal');
+            loginButtonMobile.setAttribute('data-bs-target', '#loginModal');
         }
     });
 
@@ -620,24 +626,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const user = result.user;
             console.log('Usuario autenticado:', user);
 
-            // Cierra el modal de inicio de sesión
+            // Cerrar el modal de inicio de sesión
             const loginModal = document.getElementById('loginModal');
             const modalInstance = bootstrap.Modal.getInstance(loginModal);
             modalInstance.hide();
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
-            alert('Hubo un error al iniciar sesión. Por favor, intenta nuevamente.');
+            let errorMessage = 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.';
+            
+            if (error.code === 'auth/account-exists-with-different-credential') {
+                errorMessage = 'Ya existe una cuenta con este email usando otro método de inicio de sesión.';
+            }
+            
+            alert(errorMessage);
         }
     };
 
-    // Eventos de inicio de sesión
-    loginButton.addEventListener('click', () => {
+    // Eventos de inicio de sesión con Google
+    googleLoginBtn.addEventListener('click', () => {
         const provider = new GoogleAuthProvider();
         handleLogin(provider);
     });
 
-    loginButtonMobile.addEventListener('click', () => {
-        const provider = new GoogleAuthProvider();
+    // Eventos de inicio de sesión con Facebook
+    facebookLoginBtn.addEventListener('click', () => {
+        const provider = new FacebookAuthProvider();
         handleLogin(provider);
     });
 
