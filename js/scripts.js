@@ -40,61 +40,75 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Función para actualizar el carrito y la interfaz
     const actualizarCarrito = async () => {
+        const carritoItems = document.getElementById('carritoItems');
+        const cartCount = document.getElementById('cartCount');
+        
+        if (!carritoItems || !cartCount) return;
+
         carritoItems.innerHTML = '';
         cartCount.textContent = carrito.length;
-    
+
         if (carrito.length === 0) {
-            const emptyMessage = document.createElement('div');
-            emptyMessage.classList.add('text-center', 'text-muted', 'mt-5');
-            emptyMessage.textContent = 'Aquí se mostrarán las zapatillas que compres.';
-            carritoItems.appendChild(emptyMessage);
-        } else {
-            vaciarCarritoBtn.style.display = 'block';
-    
-            carrito.forEach((producto, index) => {
-                const li = document.createElement('li');
-                li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-    
-                const itemContainer = document.createElement('div');
-                itemContainer.classList.add('d-flex', 'align-items-center', 'gap-3');
-    
-                const img = document.createElement('img');
-                img.src = `assets/img/portfolio/${producto.image}`;
-                img.alt = producto.title;
-                img.style.width = '100px';
-                img.style.height = '100px';
-                img.style.objectFit = 'cover';
-                img.classList.add('rounded');
-    
-                const textContainer = document.createElement('div');
-                textContainer.classList.add('d-flex', 'flex-column');
-                
-                const titleText = document.createElement('span');
-                titleText.textContent = producto.title;
-                titleText.classList.add('fw-bold');
-                
-                const detailsText = document.createElement('span');
-                detailsText.textContent = `Talla: ${producto.talla} | Suela: ${producto.suela}`;
-                detailsText.classList.add('text-muted', 'small');
-                
-                textContainer.appendChild(titleText);
-                textContainer.appendChild(detailsText);
-    
-                const removeBtn = document.createElement('button');
-                removeBtn.classList.add('btn-close');
-                removeBtn.setAttribute('aria-label', 'Eliminar');
-                removeBtn.addEventListener('click', async () => {
-                    await eliminarProducto(index);
-                });
-    
-                itemContainer.appendChild(img);
-                itemContainer.appendChild(textContainer);
-                li.appendChild(itemContainer);
-                li.appendChild(removeBtn);
-                carritoItems.appendChild(li);
-            });
+            carritoItems.innerHTML = `
+                <div class="text-center text-muted mt-5">
+                    Aquí se mostrarán las zapatillas que compres.
+                </div>
+            `;
+            return;
         }
-    
+
+        let totalCompra = 0;
+        let itemsHTML = '';
+
+        carrito.forEach((producto, index) => {
+            const precio = producto.title.toLowerCase().includes('sintetik') || 
+                          producto.title.toLowerCase().includes('sala') || 
+                          producto.title.toLowerCase().includes('copa') 
+                          ? 89900 : 99900;
+            
+            totalCompra += precio;
+
+            // Verificar la personalización
+            const personalizacionHTML = producto.personalizado === true ? 
+                `<div class="text-primary small fw-bold">
+                    Personalización: ${producto.nombre || ''} | #${producto.numero || ''}
+                </div>` : '';
+
+            itemsHTML += `
+                <div class="list-group-item mb-2 border rounded">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div class="d-flex gap-3 flex-grow-1">
+                            <img src="assets/img/portfolio/${producto.image}" 
+                                 alt="${producto.title}" 
+                                 class="rounded" 
+                                 style="width: 100px; height: 100px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="mb-0">${producto.title}</h6>
+                                    <span class="text-success fw-bold">$${precio.toLocaleString('es-CO')}</span>
+                                </div>
+                                <div class="text-muted small mb-1">
+                                    Talla: ${producto.talla} | Suela: ${producto.suela}
+                                </div>
+                                ${personalizacionHTML}
+                            </div>
+                        </div>
+                        <button class="btn-close" onclick="eliminarProducto(${index})" aria-label="Eliminar"></button>
+                    </div>
+                </div>
+            `;
+        });
+
+        carritoItems.innerHTML = `
+            ${itemsHTML}
+            <div class="mt-3 p-3 bg-light rounded border">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold fs-5">Total de la compra:</span>
+                    <span class="fw-bold text-success fs-4">$${totalCompra.toLocaleString('es-CO')}</span>
+                </div>
+            </div>
+        `;
+
         if (auth.currentUser) {
             await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
         }
@@ -245,8 +259,65 @@ document.addEventListener('DOMContentLoaded', () => {
                 suelaContainer.appendChild(suelaSelect);
                 selectionContainer.appendChild(suelaContainer);
 
-                // Personalización
+                // Contenedor de opciones de personalización
+                const personalizacionOptionsContainer = document.createElement('div');
+                personalizacionOptionsContainer.style.marginBottom = '15px';
+                personalizacionOptionsContainer.style.textAlign = 'left';
+
+                const personalizacionLabel = document.createElement('label');
+                personalizacionLabel.textContent = '¿Deseas ponerle nombre y número de jugador a tus zapatillas?';
+                personalizacionLabel.style.display = 'block';
+                personalizacionLabel.style.marginBottom = '5px';
+                personalizacionLabel.style.fontWeight = 'light';
+
+                // Radio buttons
+                const radioContainer = document.createElement('div');
+                radioContainer.style.marginBottom = '15px';
+                radioContainer.style.display = 'flex';
+                radioContainer.style.gap = '20px';
+
+                // Opción Sí
+                const siContainer = document.createElement('div');
+                siContainer.style.display = 'flex';
+                siContainer.style.alignItems = 'center';
+                const siRadio = document.createElement('input');
+                siRadio.type = 'radio';
+                siRadio.name = 'personalizacion';
+                siRadio.id = 'personalizacionSi';
+                siRadio.value = 'si';
+                const siLabel = document.createElement('label');
+                siLabel.htmlFor = 'personalizacionSi';
+                siLabel.textContent = ' Sí';
+                siLabel.style.marginLeft = '5px';
+                siContainer.appendChild(siRadio);
+                siContainer.appendChild(siLabel);
+
+                // Opción No
+                const noContainer = document.createElement('div');
+                noContainer.style.display = 'flex';
+                noContainer.style.alignItems = 'center';
+                const noRadio = document.createElement('input');
+                noRadio.type = 'radio';
+                noRadio.name = 'personalizacion';
+                noRadio.id = 'personalizacionNo';
+                noRadio.value = 'no';
+                const noLabel = document.createElement('label');
+                noLabel.htmlFor = 'personalizacionNo';
+                noLabel.textContent = ' No';
+                noLabel.style.marginLeft = '5px';
+                noContainer.appendChild(noRadio);
+                noContainer.appendChild(noLabel);
+
+                radioContainer.appendChild(siContainer);
+                radioContainer.appendChild(noContainer);
+
+                personalizacionOptionsContainer.appendChild(personalizacionLabel);
+                personalizacionOptionsContainer.appendChild(radioContainer);
+                selectionContainer.appendChild(personalizacionOptionsContainer);
+
+                // Contenedor de campos de personalización (inicialmente oculto)
                 const personalizacionContainer = document.createElement('div');
+                personalizacionContainer.style.display = 'none';
                 personalizacionContainer.style.marginBottom = '15px';
 
                 const nombreLabel = document.createElement('label');
@@ -259,6 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nombreInput.type = 'text';
                 nombreInput.className = 'form-control';
                 nombreInput.placeholder = 'Ingresa el nombre';
+                nombreInput.style.marginBottom = '10px';
 
                 const numeroLabel = document.createElement('label');
                 numeroLabel.textContent = 'Número del Jugador:';
@@ -284,14 +356,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const button = document.createElement('button');
                 button.textContent = 'Agregar al Carrito!';
-                button.className = 'btn btn-dark';
+                button.className = 'btn btn-secondary';  // Inicia gris
                 button.style.width = '100%';
-                button.style.height = '25px';
+                button.style.height = '35px';
+                button.style.transition = 'all 0.3s ease';
                 button.disabled = true;
 
+                // Función para validar la selección
                 const validarSeleccion = () => {
-                    button.disabled = !tallaSelect.value || !suelaSelect.value;
+                    const personalizacionSeleccionada = document.querySelector('input[name="personalizacion"]:checked')?.value;
+                    
+                    if (!tallaSelect.value || !suelaSelect.value || !personalizacionSeleccionada) {
+                        button.disabled = true;
+                        button.className = 'btn btn-secondary';
+                        button.style.backgroundColor = '#6c757d';
+                        return;
+                    }
+
+                    if (personalizacionSeleccionada === 'si') {
+                        if (!nombreInput.value.trim() || !numeroInput.value.trim()) {
+                            button.disabled = true;
+                            button.className = 'btn btn-secondary';
+                            button.style.backgroundColor = '#6c757d';
+                        } else {
+                            button.disabled = false;
+                            button.className = 'btn btn-success';
+                            button.style.backgroundColor = '#198754';
+                        }
+                    } else {
+                        button.disabled = false;
+                        button.className = 'btn btn-success';
+                        button.style.backgroundColor = '#198754';
+                    }
                 };
+
+                // Event listeners para la personalización
+                siRadio.addEventListener('change', () => {
+                    personalizacionContainer.style.display = 'block';
+                    validarSeleccion();
+                });
+
+                noRadio.addEventListener('change', () => {
+                    personalizacionContainer.style.display = 'none';
+                    nombreInput.value = '';
+                    numeroInput.value = '';
+                    validarSeleccion();
+                });
 
                 tallaSelect.addEventListener('change', validarSeleccion);
                 suelaSelect.addEventListener('change', validarSeleccion);
@@ -299,14 +409,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 numeroInput.addEventListener('input', validarSeleccion);
 
                 button.addEventListener('click', async () => {
-                    carrito.push({ 
-                        title, 
+                    const personalizacionSeleccionada = document.querySelector('input[name="personalizacion"]:checked')?.value;
+                    
+                    // Validación adicional antes de agregar al carrito
+                    if (!personalizacionSeleccionada || !tallaSelect.value || !suelaSelect.value) {
+                        alert('Por favor, completa todos los campos requeridos');
+                        return;
+                    }
+
+                    if (personalizacionSeleccionada === 'si' && (!nombreInput.value.trim() || !numeroInput.value.trim())) {
+                        alert('Por favor, completa los campos de personalización');
+                        return;
+                    }
+
+                    // Crear el objeto del producto
+                    const producto = {
+                        title,
                         image: image,
                         talla: tallaSelect.value,
                         suela: suelaSelect.value,
-                        nombre: nombreInput.value,
-                        numero: numeroInput.value
-                    });
+                        personalizado: personalizacionSeleccionada === 'si'
+                    };
+
+                    // Agregar datos de personalización si corresponde
+                    if (personalizacionSeleccionada === 'si') {
+                        producto.nombre = nombreInput.value.trim();
+                        producto.numero = numeroInput.value.trim();
+                    }
+
+                    carrito.push(producto);
                     await actualizarCarrito();
                     showSuccessModal();
                 });
@@ -350,6 +481,40 @@ document.addEventListener('DOMContentLoaded', () => {
             if (backdrop) backdrop.remove();
         });
     }
+
+    // Agregar funcionalidad de zoom a las imágenes de suelas
+    document.querySelectorAll('#services img').forEach(img => {
+        img.style.cursor = 'pointer';
+        img.addEventListener('click', () => {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '9999';
+            modal.style.cursor = 'pointer';
+
+            const enlargedImg = document.createElement('img');
+            enlargedImg.src = img.src;
+            enlargedImg.style.maxWidth = '90%';
+            enlargedImg.style.maxHeight = '90vh';
+            enlargedImg.style.objectFit = 'contain';
+            enlargedImg.style.transition = 'transform 0.3s ease';
+
+            modal.appendChild(enlargedImg);
+            document.body.appendChild(modal);
+
+            // Cerrar al hacer clic
+            modal.addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+        });
+    });
   });
   
   //INICIO DE SESION
@@ -359,13 +524,13 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Configuración de Firebase
   const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID,
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID
+    apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
+    authDomain: "hat-trick-9319c.firebaseapp.com",
+    projectId: "hat-trick-9319c",
+    storageBucket: "hat-trick-9319c.firebasestorage.app",
+    messagingSenderId: "303428148607",
+    appId: "1:303428148607:web:84294bbe953e9911a64e4a",
+    measurementId: "G-XENSCPPQ18"
 };
   
 // Inicializa Firebase
@@ -496,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!carritoItems || !cartCount) return;
 
-        carritoItems.innerHTML = "";
+        carritoItems.innerHTML = '';
         cartCount.textContent = carrito.length;
 
         if (carrito.length === 0) {
@@ -507,53 +672,69 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        let totalCompra = 0;
+
         carrito.forEach((producto, index) => {
-            const li = document.createElement("li");
-            li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+            // Calcular precio
+            const precio = producto.title.toLowerCase().includes('sintetik') || 
+                          producto.title.toLowerCase().includes('sala') || 
+                          producto.title.toLowerCase().includes('copa') 
+                          ? 89900 : 99900;
+            totalCompra += precio;
 
-            const itemContainer = document.createElement("div");
-            itemContainer.classList.add("d-flex", "align-items-center", "gap-3");
+            // Crear elemento del carrito
+            const li = document.createElement('div');
+            li.classList.add('list-group-item', 'mb-2', 'border', 'rounded');
 
-            const img = document.createElement("img");
-            img.src = `assets/img/portfolio/${producto.image}`;
-            img.alt = producto.title;
-            img.style.width = "100px";
-            img.style.height = "100px";
-            img.style.objectFit = "cover";
-            img.classList.add("rounded");
+            const contenido = `
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex gap-3 flex-grow-1">
+                        <img src="assets/img/portfolio/${producto.image}" 
+                             alt="${producto.title}" 
+                             class="rounded" 
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0">${producto.title}</h6>
+                                <span class="text-success fw-bold">$${precio.toLocaleString('es-CO')}</span>
+                            </div>
+                            <div class="text-muted small mb-1">
+                                Talla: ${producto.talla} | Suela: ${producto.suela}
+                            </div>
+                            ${producto.personalizado ? 
+                                `<div class="text-primary small fw-bold">
+                                    Personalización: ${producto.nombre} | #${producto.numero}
+                                </div>` : ''}
+                        </div>
+                    </div>
+                    <button class="btn-close" aria-label="Eliminar"></button>
+                </div>
+            `;
 
-            const textContainer = document.createElement('div');
-            textContainer.classList.add('d-flex', 'flex-column');
+            li.innerHTML = contenido;
             
-            const titleText = document.createElement('span');
-            titleText.textContent = producto.title;
-            titleText.classList.add('fw-bold');
+            // Agregar evento al botón de eliminar
+            li.querySelector('.btn-close').addEventListener('click', () => eliminarProducto(index));
             
-            const detailsText = document.createElement('span');
-            detailsText.textContent = `Talla: ${producto.talla} | Suela: ${producto.suela}`;
-            detailsText.classList.add('text-muted', 'small');
-
-            const personalizacionText = document.createElement('span');
-            personalizacionText.textContent = `Nombre: ${producto.nombre || 'No especificado'} | Número: ${producto.numero || 'No especificado'}`;
-            personalizacionText.classList.add('text-muted', 'small');
-            
-            textContainer.appendChild(titleText);
-            textContainer.appendChild(detailsText);
-            textContainer.appendChild(personalizacionText);
-
-            const removeBtn = document.createElement('button');
-            removeBtn.classList.add('btn-close');
-            removeBtn.setAttribute('aria-label', 'Eliminar');
-            removeBtn.addEventListener('click', async () => {
-                await eliminarProducto(index);
-            });
-
-            itemContainer.appendChild(img);
-            itemContainer.appendChild(textContainer);
-            li.appendChild(itemContainer);
-            li.appendChild(removeBtn);
             carritoItems.appendChild(li);
         });
+
+        // Agregar el total
+        const totalHTML = `
+            <div class="mt-3 p-3 bg-light rounded border">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold fs-5">Total de la compra:</span>
+                    <span class="fw-bold text-success fs-4">$${totalCompra.toLocaleString('es-CO')}</span>
+                </div>
+            </div>
+        `;
+        
+        carritoItems.insertAdjacentHTML('beforeend', totalHTML);
+
+        // Guardar en Firebase si hay usuario autenticado
+        if (auth.currentUser) {
+            guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
+        }
     }
 
     // Función para eliminar producto
