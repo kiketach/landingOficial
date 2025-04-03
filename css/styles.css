@@ -1174,6 +1174,9 @@ header.masthead .masthead-subheading {
   font-size: 0.9rem;
   font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+.footer a {
+  color: #6c757d; /* Color gris claro */
+}
 
 /* ESTILOS DE CENTRADO DE MODALES CARRITO Y LOGIN */
 #carritoModal .modal-dialog,
