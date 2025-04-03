@@ -570,23 +570,18 @@ window.carrito = [];
 });
   
 //INICIO DE SESION
+// INICIO DE SESION
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
-  
-// Configuración de Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
-  authDomain: "hat-trick-9319c.firebaseapp.com",
-  projectId: "hat-trick-9319c",
-  storageBucket: "hat-trick-9319c.firebasestorage.app",
-  messagingSenderId: "303428148607",
-  appId: "1:303428148607:web:84294bbe953e9911a64e4a",
-  measurementId: "G-XENSCPPQ18"
-};
-  
+
+// Importar la configuración de Firebase desde el archivo config.js
+import firebaseConfig from './config.js'; // Asegúrate de que la ruta sea correcta
+
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
+  
+// Inicializa Firebase
 const auth = getAuth(app);
 const db = getFirestore(app);
   

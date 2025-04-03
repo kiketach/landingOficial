@@ -1,0 +1,32 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Cambia esto si tu rama principal tiene otro nombre
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create Firebase config
+        run: |
+          echo "const firebaseConfig = {" > config.js
+          echo "  apiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> config.js
+          echo "  authDomain: '${{ secrets.FIREBASE_AUTH_DOMAIN }}'," >> config.js
+          echo "  projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'," >> config.js
+          echo "  storageBucket: '${{ secrets.FIREBASE_STORAGE_BUCKET }}'," >> config.js
+          echo "  messagingSenderId: '${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}'," >> config.js
+          echo "  appId: '${{ secrets.FIREBASE_APP_ID }}'" >> config.js
+          echo "};" >> config.js
+          echo "export default firebaseConfig;" >> config.js
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist  # Cambia esto si tu carpeta de salida es diferente
