@@ -576,7 +576,7 @@ import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/fireb
   
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
+  apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
   authDomain: "hat-trick-9319c.firebaseapp.com",
   projectId: "hat-trick-9319c",
   storageBucket: "hat-trick-9319c.firebasestorage.app",
