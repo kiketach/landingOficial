@@ -545,13 +545,19 @@ document.addEventListener('DOMContentLoaded', () => {
 async function guardarCarritoEnFirestore(uid, carrito) {
     try {
         const carritoRef = doc(db, "carritos", uid);
+        const user = auth.currentUser;
+        
         await setDoc(carritoRef, {
             items: carrito,
-            lastUpdated: new Date()
-        });
-        console.log("Carrito guardado en Firestore");
+            userInfo: {
+                nombre: user.displayName || 'Usuario',
+                email: user.email,
+                lastUpdated: new Date()
+            }
+        }, { merge: true }); // Usar merge para no sobrescribir otros datos
+        console.log("Carrito y datos de usuario guardados en Firestore");
     } catch (error) {
-        console.error("Error al guardar el carrito en Firestore:", error);
+        console.error("Error al guardar en Firestore:", error);
     }
 }
 
@@ -563,12 +569,17 @@ async function cargarCarritoDesdeFirestore(uid) {
 
         if (carritoSnap.exists()) {
             const data = carritoSnap.data();
-            return data.items; // Devolvemos los items tal cual están en Firestore
+            // Si hay datos de usuario, los guardamos en una variable global
+            if (data.userInfo) {
+                window.userInfo = data.userInfo;
+                console.log("Datos del usuario cargados:", data.userInfo);
+            }
+            return data.items || []; // Devolvemos los items o un array vacío
         } else {
-            return []; // Si no hay carrito guardado, devuelve un array vacío
+            return [];
         }
     } catch (error) {
-        console.error("Error al cargar el carrito desde Firestore:", error);
+        console.error("Error al cargar desde Firestore:", error);
         return [];
     }
 }
@@ -592,8 +603,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Detecta el estado de autenticación al cargar la página
     onAuthStateChanged(auth, async (user) => {
         if (user) {
+            // Cargar carrito y datos del usuario
             carrito = await cargarCarritoDesdeFirestore(user.uid);
             actualizarCarritoUI(carrito);
+
+            // Guardar información inicial del usuario si es necesario
+            const userInfo = {
+                nombre: user.displayName || 'Usuario',
+                email: user.email,
+                lastUpdated: new Date()
+            };
+            
+            try {
+                const carritoRef = doc(db, "carritos", user.uid);
+                await setDoc(carritoRef, { userInfo }, { merge: true });
+            } catch (error) {
+                console.error("Error al guardar información inicial del usuario:", error);
+            }
 
             const displayName = user.displayName || 'Usuario';
             loginButton.textContent = `¡Hola, ${displayName}!`;
@@ -607,6 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             carrito = [];
             actualizarCarritoUI(carrito);
+            window.userInfo = null; // Limpiar información del usuario
 
             loginButton.textContent = 'Entrar';
             loginButtonMobile.textContent = 'Entrar';
