@@ -4,12 +4,12 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 
 // Configuración de Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyDxQxQxQxQxQxQxQxQxQxQxQxQxQxQxQxQ",
+    apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
     authDomain: "hat-trick-9319c.firebaseapp.com",
     projectId: "hat-trick-9319c",
     storageBucket: "hat-trick-9319c.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef1234567890"
+    messagingSenderId: "303428148607",
+    appId: "1:303428148607:web:84294bbe953e9911a64e4a"
 };
 
 // Inicializar Firebase
@@ -29,100 +29,185 @@ let carritoActual = [];
 let usuarioActual = null;
 
 // Función para cargar los datos del usuario y el carrito
-async function cargarDatosUsuario() {
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            usuarioActual = user;
-            nombreCliente.value = user.displayName || '';
-            emailCliente.value = user.email || '';
+async function cargarDatosUsuario(user) {
+    if (!user) return;
 
-            // Cargar carrito desde Firestore
+    try {
+        usuarioActual = user;
+        nombreCliente.value = user.displayName || '';
+        emailCliente.value = user.email || '';
+
+        // Intentar cargar el carrito desde localStorage primero
+        const carritoTemp = localStorage.getItem('carritoTemp');
+        if (carritoTemp) {
+            carritoActual = JSON.parse(carritoTemp);
+            localStorage.removeItem('carritoTemp');
+        } else {
+            // Si no hay carrito en localStorage, cargar desde Firestore
             const docRef = doc(db, "carritos", user.uid);
             const docSnap = await getDoc(docRef);
             
             if (docSnap.exists()) {
                 const datos = docSnap.data();
                 carritoActual = datos.items || [];
-                window.userInfo = datos.userInfo || {};
                 
-                // Actualizar UI
-                actualizarResumenCarrito();
+                // Cargar datos de dirección si existen
+                if (datos.direccionEntrega) {
+                    const direccionEntrega = datos.direccionEntrega;
+                    document.getElementById('direccion').value = direccionEntrega.direccion || '';
+                    document.getElementById('ciudad').value = direccionEntrega.ciudad || '';
+                    document.getElementById('estado').value = direccionEntrega.estado || '';
+                    document.getElementById('telefono').value = direccionEntrega.telefono || '';
+                    document.getElementById('instrucciones').value = direccionEntrega.instrucciones || '';
+                }
             }
-        } else {
-            // Redirigir a la página principal si no hay usuario autenticado
-            window.location.href = 'index.html';
         }
-    });
+
+        if (!carritoActual || carritoActual.length === 0) {
+            alert('Tu carrito está vacío. Serás redirigido a la página principal.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Actualizar UI
+        actualizarResumenCarrito();
+    } catch (error) {
+        console.error("Error al cargar datos:", error);
+        alert('Hubo un error al cargar tu carrito. Por favor, intenta nuevamente.');
+        window.location.href = 'index.html';
+    }
 }
 
 // Función para actualizar el resumen del carrito
 function actualizarResumenCarrito() {
+    if (!resumenProductos || !totalPedido) return;
+
     let total = 0;
-    resumenProductos.innerHTML = '';
+    let html = '';
 
-    carritoActual.forEach(item => {
-        const precio = parseFloat(item.precio);
-        const subtotal = precio * item.cantidad;
-        total += subtotal;
+    carritoActual.forEach(producto => {
+        const precio = producto.title?.toLowerCase().includes('sintetik') || 
+                      producto.title?.toLowerCase().includes('sala') || 
+                      producto.title?.toLowerCase().includes('copa') 
+                      ? 89900 : 99900;
 
-        const productoHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h6 class="mb-0">${item.nombre}</h6>
+        total += precio;
+
+        html += `
+            <div class="producto-resumen d-flex align-items-center mb-3">
+                <img src="assets/img/portfolio/${producto.image}" 
+                     alt="${producto.title}" 
+                     class="producto-imagen me-3" 
+                     style="width: 80px; height: 80px; object-fit: cover;">
+                <div class="producto-detalles flex-grow-1">
+                    <h6 class="mb-0">${producto.title}</h6>
                     <small class="text-muted">
-                        Talla: ${item.talla} | 
-                        Suela: ${item.suela}
-                        ${item.personalizado ? `<br>Personalizado: ${item.personalizado.nombre} - ${item.personalizado.numero}` : ''}
+                        Talla: ${producto.talla} | 
+                        Suela: ${producto.suela}
+                        ${producto.personalizado ? `<br>Personalizado: ${producto.nombre} - #${producto.numero}` : ''}
                     </small>
-                </div>
-                <div class="text-end">
-                    <div>$${precio.toFixed(2)} x ${item.cantidad}</div>
-                    <div class="fw-bold">$${subtotal.toFixed(2)}</div>
+                    <div class="text-end">
+                        <div class="fw-bold">$${precio.toLocaleString('es-CO')}</div>
+                    </div>
                 </div>
             </div>
         `;
-        resumenProductos.innerHTML += productoHTML;
     });
 
-    totalPedido.textContent = `$${total.toFixed(2)}`;
+    resumenProductos.innerHTML = html;
+    totalPedido.textContent = `$${total.toLocaleString('es-CO')}`;
+}
+
+// Función para generar un número de pedido aleatorio
+function generarNumeroPedido() {
+    const fecha = new Date();
+    const año = fecha.getFullYear().toString().substr(-2);
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const dia = fecha.getDate().toString().padStart(2, '0');
+    const aleatorio = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `HT-${año}${mes}${dia}-${aleatorio}`;
 }
 
 // Manejar el envío del formulario
-formularioEntrega.addEventListener('submit', async (e) => {
-    e.preventDefault();
+if (formularioEntrega) {
+    formularioEntrega.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    if (!usuarioActual) {
-        alert('Debes iniciar sesión para continuar');
-        return;
+        if (!usuarioActual) {
+            alert('Debes iniciar sesión para continuar');
+            return;
+        }
+
+        const direccionEntrega = {
+            direccion: document.getElementById('direccion').value,
+            ciudad: document.getElementById('ciudad').value,
+            estado: document.getElementById('estado').value,
+            telefono: document.getElementById('telefono').value,
+            instrucciones: document.getElementById('instrucciones').value || 'Sin instrucciones adicionales'
+        };
+
+        try {
+            // Mostrar indicador de carga
+            const btnPagar = document.getElementById('btnPagar');
+            if (btnPagar) {
+                btnPagar.disabled = true;
+                btnPagar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+            }
+
+            // Generar número de pedido
+            const numeroPedido = generarNumeroPedido();
+
+            // Guardar en Firestore
+            const docRef = doc(db, "carritos", usuarioActual.uid);
+            await updateDoc(docRef, {
+                direccionEntrega: direccionEntrega,
+                fechaActualizacion: new Date(),
+                estado: 'pendiente_pago',
+                numeroPedido: numeroPedido
+            });
+
+            // Mostrar mensaje de éxito
+            alert('¡Datos de entrega guardados correctamente!');
+            
+            // Mostrar el número de pedido en el modal
+            const numeroPedidoElement = document.getElementById('numeroPedido');
+            if (numeroPedidoElement) {
+                numeroPedidoElement.textContent = numeroPedido;
+            }
+            
+            // Mostrar el modal de pago
+            const modalPago = new bootstrap.Modal(document.getElementById('modalPago'));
+            modalPago.show();
+            
+            // Restaurar el botón
+            if (btnPagar) {
+                btnPagar.disabled = false;
+                btnPagar.innerHTML = 'Proceder al Pago';
+            }
+        } catch (error) {
+            console.error("Error al guardar la dirección:", error);
+            alert('Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.');
+            
+            // Restaurar el botón en caso de error
+            const btnPagar = document.getElementById('btnPagar');
+            if (btnPagar) {
+                btnPagar.disabled = false;
+                btnPagar.innerHTML = 'Proceder al Pago';
+            }
+        }
+    });
+}
+
+// Esperar a que Firebase inicialice antes de cargar los datos
+let authInitialized = false;
+onAuthStateChanged(auth, (user) => {
+    if (!authInitialized) {
+        authInitialized = true;
+        if (user) {
+            cargarDatosUsuario(user);
+        } else {
+            alert('Debes iniciar sesión para realizar una compra. Serás redirigido a la página principal.');
+            window.location.href = 'index.html';
+        }
     }
-
-    const direccionEntrega = {
-        direccion: document.getElementById('direccion').value,
-        ciudad: document.getElementById('ciudad').value,
-        estado: document.getElementById('estado').value,
-        codigoPostal: document.getElementById('codigoPostal').value,
-        telefono: document.getElementById('telefono').value,
-        instrucciones: document.getElementById('instrucciones').value
-    };
-
-    try {
-        // Actualizar el documento en Firestore con la dirección de entrega
-        const docRef = doc(db, "carritos", usuarioActual.uid);
-        await updateDoc(docRef, {
-            direccionEntrega: direccionEntrega,
-            fechaActualizacion: new Date()
-        });
-
-        // Aquí iría la redirección a la pasarela de pagos
-        alert('¡Gracias por tu compra! Serás redirigido al pago...');
-        // window.location.href = 'URL_DE_LA_PASARELA_DE_PAGOS';
-    } catch (error) {
-        console.error("Error al guardar la dirección:", error);
-        alert('Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.');
-    }
-});
-
-// Inicializar la página
-document.addEventListener('DOMContentLoaded', () => {
-    cargarDatosUsuario();
 }); 

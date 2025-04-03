@@ -6,14 +6,19 @@
     <title>Finalizar Compra - Hat Trick</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/styles.css" rel="stylesheet">
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="assets/img/Logo.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+    <nav class="navbar navbar-expand-lg navbar-dark" id="mainNav">
         <div class="container">
             <a class="navbar-brand" href="index.html">
                 <img src="assets/img/logo.png" alt="Hat Trick Logo" height="40">
+            </a>
+            <a href="index.html" class="btn btn-outline-light">
+                <i class="fas fa-home me-2"></i>Volver al inicio
             </a>
         </div>
     </nav>
@@ -42,6 +47,13 @@
                         <div class="card-body">
                             <div id="resumenProductos">
                                 <!-- Aquí se cargarán los productos dinámicamente -->
+                                <div class="producto-resumen d-flex align-items-center mb-3">
+                                    <img src="" alt="Producto" class="producto-imagen me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                    <div class="producto-detalles">
+                                        <h5 class="producto-nombre mb-1"></h5>
+                                        <p class="producto-precio mb-0"></p>
+                                    </div>
+                                </div>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between">
@@ -76,24 +88,20 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label">Ciudad</label>
+                                        <label for="ciudad" class="form-label">Ciudad</label>
                                         <input type="text" class="form-control" id="ciudad" required>
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label">Estado</label>
+                                        <label for="estado" class="form-label">Estado/Departamento</label>
                                         <input type="text" class="form-control" id="estado" required>
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label">Código Postal</label>
-                                        <input type="text" class="form-control" id="codigoPostal" required>
+                                        <label class="form-label">Teléfono</label>
+                                        <input type="tel" class="form-control" id="telefono" required>
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Teléfono</label>
-                                    <input type="tel" class="form-control" id="telefono" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Instrucciones de Entrega (opcional)</label>
+                                    <label for="instrucciones" class="form-label">Instrucciones de entrega (opcional)</label>
                                     <textarea class="form-control" id="instrucciones" rows="3"></textarea>
                                 </div>
                                 <div class="d-grid gap-2">
@@ -109,15 +117,37 @@
         </div>
     </section>
 
+    <!-- Modal de Pago Pendiente -->
+    <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPagoLabel">Proceso de Pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-credit-card fa-4x mb-3 text-primary"></i>
+                    <h4>¡Gracias por tu compra!</h4>
+                    <p>Tu pedido ha sido registrado correctamente.</p>
+                    <p>La integración con la pasarela de pagos está pendiente. Te contactaremos pronto para completar el proceso de pago.</p>
+                    <p class="text-muted">Número de pedido: <span id="numeroPedido"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <a href="index.html" class="btn btn-primary">Volver al inicio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer py-4">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-4 text-lg-start">Copyright &copy; Hat Trick 2024</div>
+                <div class="col-lg-4 text-lg-start">Copyright &copy; Hat Trick 2025</div>
                 <div class="col-lg-4 my-3 my-lg-0">
-                    <a class="btn btn-dark btn-social mx-2" href="#!"><i class="fab fa-twitter"></i></a>
-                    <a class="btn btn-dark btn-social mx-2" href="#!"><i class="fab fa-facebook-f"></i></a>
-                    <a class="btn btn-dark btn-social mx-2" href="#!"><i class="fab fa-instagram"></i></a>
+                    <a class="btn btn-dark btn-social mx-2" href="https://www.facebook.com/Zapatillas-Hat-Trick-105518931586032" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a class="btn btn-dark btn-social mx-2" href="https://www.instagram.com/zapatillashattrick/" target="_blank"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
         </div>

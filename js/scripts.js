@@ -32,23 +32,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
   
-// Variables globales del carrito
-    const carrito = [];
+// Variables globales
+window.carrito = [];
     const cartCount = document.getElementById('cartCount');
     const carritoItems = document.getElementById('carritoItems');
     const vaciarCarritoBtn = document.getElementById('vaciarCarrito');
   
-    // Función para actualizar el carrito y la interfaz
-    const actualizarCarrito = async () => {
+    // Función para actualizar el carrito
+    window.actualizarCarrito = async function() {
         const carritoItems = document.getElementById('carritoItems');
         const cartCount = document.getElementById('cartCount');
         
         if (!carritoItems || !cartCount) return;
 
         carritoItems.innerHTML = '';
-        cartCount.textContent = carrito.length;
+        cartCount.textContent = window.carrito.length;
 
-        if (carrito.length === 0) {
+        if (window.carrito.length === 0) {
             carritoItems.innerHTML = `
                 <div class="text-center text-muted mt-5">
                     Aquí se mostrarán las zapatillas que compres.
@@ -60,15 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let totalCompra = 0;
         let itemsHTML = '';
 
-        carrito.forEach((producto, index) => {
-            const precio = producto.title.toLowerCase().includes('sintetik') || 
-                          producto.title.toLowerCase().includes('sala') || 
-                          producto.title.toLowerCase().includes('copa') 
+        window.carrito.forEach((producto, index) => {
+            const precio = producto.title?.toLowerCase().includes('sintetik') || 
+                          producto.title?.toLowerCase().includes('sala') || 
+                          producto.title?.toLowerCase().includes('copa') 
                           ? 89900 : 99900;
             
             totalCompra += precio;
 
-            // Verificar la personalización
             const personalizacionHTML = producto.personalizado === true ? 
                 `<div class="text-primary small fw-bold">
                     Personalización: ${producto.nombre || ''} | #${producto.numero || ''}
@@ -93,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${personalizacionHTML}
                             </div>
                         </div>
-                        <button class="btn-close" onclick="eliminarProducto(${index})" aria-label="Eliminar"></button>
+                        <button class="btn-close" onclick="window.eliminarProducto(${index})" aria-label="Eliminar"></button>
                     </div>
                 </div>
             `;
@@ -110,21 +109,56 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         if (auth.currentUser) {
-            await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
+            await window.guardarCarritoEnFirestore(auth.currentUser.uid);
         }
     };
   
     // Función para eliminar un producto del carrito
-    const eliminarProducto = async (index) => {
-        carrito.splice(index, 1);
-        await actualizarCarrito(); // Actualiza la interfaz y Firebase
+    window.eliminarProducto = async function(index) {
+        window.carrito.splice(index, 1);
+        await window.actualizarCarrito();
     };
   
     // Evento para vaciar el carrito
     if (vaciarCarritoBtn) {
         vaciarCarritoBtn.addEventListener('click', async () => {
-            carrito.length = 0;
-            await actualizarCarrito();
+            window.carrito = [];
+            if (auth.currentUser) {
+                try {
+                    const carritoRef = doc(db, "carritos", auth.currentUser.uid);
+                    const docSnap = await getDoc(carritoRef);
+                    
+                    if (docSnap.exists()) {
+                        const datosActuales = docSnap.data();
+                        // Mantener los datos existentes pero actualizar solo los items
+                        await setDoc(carritoRef, {
+                            ...datosActuales,
+                            items: [],
+                            userInfo: {
+                                ...datosActuales.userInfo,
+                                lastUpdated: new Date()
+                            }
+                        }, { merge: true });
+                    } else {
+                        // Si no existe el documento, crear uno nuevo solo con items vacíos
+                        await setDoc(carritoRef, {
+                            items: [],
+                            userInfo: {
+                                nombre: auth.currentUser.displayName || 'Usuario',
+                                email: auth.currentUser.email,
+                                lastUpdated: new Date()
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error al vaciar el carrito en Firebase:", error);
+                }
+            }
+            await window.actualizarCarrito();
+            const carritoModal = bootstrap.Modal.getInstance(document.getElementById('carritoModal'));
+            if (carritoModal) {
+                carritoModal.hide();
+            }
         });
     }
   
@@ -437,8 +471,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         producto.numero = numeroInput.value.trim();
                     }
 
-                    carrito.push(producto);
-                    await actualizarCarrito();
+                    window.carrito.push(producto);
+                    await window.actualizarCarrito();
                     showSuccessModal();
                 });
 
@@ -466,11 +500,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (catalogModal) {
             catalogModal.hide();
         }
-        
-        // Cerrar automáticamente el modal de éxito después de 2 segundos
-        setTimeout(() => {
-            successModal.hide();
-        }, 2000);
     };
   
     // Limpieza del fondo del modal al cerrarlo
@@ -515,274 +544,201 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
-  });
+
+    // Manejador del botón de compra
+    const btnComprar = document.getElementById('btnComprar');
+    if (btnComprar) {
+        btnComprar.addEventListener('click', () => {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Debes iniciar sesión para realizar una compra.');
+                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+                return;
+            }
+            
+            if (!window.carrito || window.carrito.length === 0) {
+                alert('Tu carrito está vacío. Por favor, agrega productos antes de proceder con la compra.');
+                return;
+            }
+            
+            // Guardar el carrito en localStorage antes de redirigir
+            localStorage.setItem('carritoTemp', JSON.stringify(window.carrito));
+            window.location.href = 'compra.html';
+        });
+    }
+});
   
-  //INICIO DE SESION
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+//INICIO DE SESION
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
   
-  // Configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
-    authDomain: "hat-trick-9319c.firebaseapp.com",
-    projectId: "hat-trick-9319c",
-    storageBucket: "hat-trick-9319c.firebasestorage.app",
-    messagingSenderId: "303428148607",
-    appId: "1:303428148607:web:84294bbe953e9911a64e4a",
-    measurementId: "G-XENSCPPQ18"
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
+  authDomain: "hat-trick-9319c.firebaseapp.com",
+  projectId: "hat-trick-9319c",
+  storageBucket: "hat-trick-9319c.firebasestorage.app",
+  messagingSenderId: "303428148607",
+  appId: "1:303428148607:web:84294bbe953e9911a64e4a",
+  measurementId: "G-XENSCPPQ18"
 };
   
 // Inicializa Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
   
-  // Variables globales
-  let carrito = []; // Carrito de compras
-  
-  /// Función para guardar el carrito en Firestore
-async function guardarCarritoEnFirestore(uid, carrito) {
+/// Función para guardar el carrito en Firestore
+window.guardarCarritoEnFirestore = async function(uid) {
     try {
         const carritoRef = doc(db, "carritos", uid);
         const user = auth.currentUser;
         
         await setDoc(carritoRef, {
-            items: carrito,
+            items: window.carrito,
             userInfo: {
                 nombre: user.displayName || 'Usuario',
                 email: user.email,
                 lastUpdated: new Date()
             }
-        }, { merge: true }); // Usar merge para no sobrescribir otros datos
-        console.log("Carrito y datos de usuario guardados en Firestore");
+        }, { merge: true });
+        
+        console.log("Carrito guardado en Firestore");
     } catch (error) {
         console.error("Error al guardar en Firestore:", error);
     }
-}
+};
 
 // Función para cargar el carrito desde Firestore
-async function cargarCarritoDesdeFirestore(uid) {
+window.cargarCarritoDesdeFirestore = async function(uid) {
     try {
-        const carritoRef = doc(db, "carritos", uid);
-        const carritoSnap = await getDoc(carritoRef);
-
-        if (carritoSnap.exists()) {
-            const data = carritoSnap.data();
-            // Si hay datos de usuario, los guardamos en una variable global
-            if (data.userInfo) {
-                window.userInfo = data.userInfo;
-                console.log("Datos del usuario cargados:", data.userInfo);
+        const docRef = doc(db, "carritos", uid);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.items && Array.isArray(data.items)) {
+                window.carrito = data.items;
+                await window.actualizarCarrito();
             }
-            return data.items || []; // Devolvemos los items o un array vacío
-        } else {
-            return [];
         }
     } catch (error) {
-        console.error("Error al cargar desde Firestore:", error);
-        return [];
+        console.error('Error al cargar el carrito:', error);
     }
-}
+};
 
-// Resto del código dentro del bloque DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
+// Función para actualizar la UI basada en el estado de autenticación
+window.actualizarUIAutenticacion = function(user) {
     const loginButton = document.getElementById('loginButton');
     const loginButtonMobile = document.getElementById('loginButtonMobile');
     const logoutButton = document.getElementById('logoutButton');
     const logoutButtonMobile = document.getElementById('logoutButtonMobile');
-    const googleLoginBtn = document.getElementById('googleLogin');
-    const facebookLoginBtn = document.getElementById('facebookLogin');
-    const carritoItems = document.getElementById('carritoItems');
-    const cartCount = document.getElementById('cartCount');
 
-    if (!loginButton || !loginButtonMobile || !logoutButton || !logoutButtonMobile || !googleLoginBtn || !facebookLoginBtn) {
-        console.error('Algunos botones no se encontraron en el DOM.');
-        return;
-    }
-
-    // Detecta el estado de autenticación al cargar la página
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // Cargar carrito y datos del usuario
-            carrito = await cargarCarritoDesdeFirestore(user.uid);
-            actualizarCarritoUI(carrito);
-
-            // Guardar información inicial del usuario si es necesario
-            const userInfo = {
-                nombre: user.displayName || 'Usuario',
-                email: user.email,
-                lastUpdated: new Date()
-            };
-            
-            try {
-                const carritoRef = doc(db, "carritos", user.uid);
-                await setDoc(carritoRef, { userInfo }, { merge: true });
-            } catch (error) {
-                console.error("Error al guardar información inicial del usuario:", error);
-            }
-
-            const displayName = user.displayName || 'Usuario';
+    if (user) {
+        const displayName = user.displayName || 'Usuario';
+        if (loginButton) {
             loginButton.textContent = `¡Hola, ${displayName}!`;
-            loginButtonMobile.textContent = `¡Hola, ${displayName}!`;
-            logoutButton.classList.remove('d-none');
-            logoutButtonMobile.classList.remove('d-none');
             loginButton.removeAttribute('data-bs-toggle');
             loginButton.removeAttribute('data-bs-target');
+        }
+        if (loginButtonMobile) {
+            loginButtonMobile.textContent = `¡Hola, ${displayName}!`;
             loginButtonMobile.removeAttribute('data-bs-toggle');
             loginButtonMobile.removeAttribute('data-bs-target');
-        } else {
-            carrito = [];
-            actualizarCarritoUI(carrito);
-            window.userInfo = null; // Limpiar información del usuario
-
+        }
+        if (logoutButton) logoutButton.classList.remove('d-none');
+        if (logoutButtonMobile) logoutButtonMobile.classList.remove('d-none');
+    } else {
+        if (loginButton) {
             loginButton.textContent = 'Entrar';
-            loginButtonMobile.textContent = 'Entrar';
-            logoutButton.classList.add('d-none');
-            logoutButtonMobile.classList.add('d-none');
             loginButton.setAttribute('data-bs-toggle', 'modal');
             loginButton.setAttribute('data-bs-target', '#loginModal');
+        }
+        if (loginButtonMobile) {
+            loginButtonMobile.textContent = 'Entrar';
             loginButtonMobile.setAttribute('data-bs-toggle', 'modal');
             loginButtonMobile.setAttribute('data-bs-target', '#loginModal');
         }
-    });
+        if (logoutButton) logoutButton.classList.add('d-none');
+        if (logoutButtonMobile) logoutButtonMobile.classList.add('d-none');
+    }
+};
 
-    // Función para manejar el inicio de sesión
-    const handleLogin = async (provider) => {
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            console.log('Usuario autenticado:', user);
+// Función para manejar el inicio de sesión
+window.handleLogin = async function(provider) {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        console.log('Usuario autenticado:', user);
 
-            // Cerrar el modal de inicio de sesión
-            const loginModal = document.getElementById('loginModal');
-            const modalInstance = bootstrap.Modal.getInstance(loginModal);
-            modalInstance.hide();
-        } catch (error) {
-            console.error('Error al iniciar sesión:', error);
-            let errorMessage = 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.';
-            
-            if (error.code === 'auth/account-exists-with-different-credential') {
-                errorMessage = 'Ya existe una cuenta con este email usando otro método de inicio de sesión.';
-            }
-            
-            alert(errorMessage);
+        // Cerrar el modal de inicio de sesión
+        const loginModal = document.getElementById('loginModal');
+        const modalInstance = bootstrap.Modal.getInstance(loginModal);
+        if (modalInstance) modalInstance.hide();
+
+        // Actualizar la UI
+        window.actualizarUIAutenticacion(user);
+
+        // Cargar el carrito del usuario
+        await window.cargarCarritoDesdeFirestore(user.uid);
+
+    } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        let errorMessage = 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.';
+        
+        if (error.code === 'auth/account-exists-with-different-credential') {
+            errorMessage = 'Ya existe una cuenta con este email usando otro método de inicio de sesión.';
         }
-    };
+        
+        alert(errorMessage);
+    }
+};
 
-    // Eventos de inicio de sesión con Google
-    googleLoginBtn.addEventListener('click', () => {
-        const provider = new GoogleAuthProvider();
-        handleLogin(provider);
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    // Eventos de inicio de sesión
+    const googleLoginBtn = document.getElementById('googleLogin');
+    const facebookLoginBtn = document.getElementById('facebookLogin');
 
-    // Eventos de inicio de sesión con Facebook
-    facebookLoginBtn.addEventListener('click', () => {
-        const provider = new FacebookAuthProvider();
-        handleLogin(provider);
-    });
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            window.handleLogin(provider);
+        });
+    }
+
+    if (facebookLoginBtn) {
+        facebookLoginBtn.addEventListener('click', () => {
+            const provider = new FacebookAuthProvider();
+            window.handleLogin(provider);
+        });
+    }
 
     // Eventos de cierre de sesión
+    const logoutButton = document.getElementById('logoutButton');
+    const logoutButtonMobile = document.getElementById('logoutButtonMobile');
+
     const handleLogout = async () => {
         try {
             await signOut(auth);
+            window.carrito = [];
+            window.actualizarCarrito();
+            window.actualizarUIAutenticacion(null);
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
             alert('Hubo un error al cerrar sesión. Por favor, intenta nuevamente.');
         }
     };
 
-    logoutButton.addEventListener('click', handleLogout);
-    logoutButtonMobile.addEventListener('click', handleLogout);
+    if (logoutButton) logoutButton.addEventListener('click', handleLogout);
+    if (logoutButtonMobile) logoutButtonMobile.addEventListener('click', handleLogout);
 
-    // Función para actualizar la interfaz del carrito
-    function actualizarCarritoUI(carrito) {
-        const carritoItems = document.getElementById('carritoItems');
-        const cartCount = document.getElementById('cartCount');
-        
-        if (!carritoItems || !cartCount) return;
-
-        carritoItems.innerHTML = '';
-        cartCount.textContent = carrito.length;
-
-        if (carrito.length === 0) {
-            const emptyMessage = document.createElement('div');
-            emptyMessage.classList.add('text-center', 'text-muted', 'mt-5');
-            emptyMessage.textContent = 'Aquí se mostrarán las zapatillas que compres.';
-            carritoItems.appendChild(emptyMessage);
-            return;
+    // Observador del estado de autenticación
+    onAuthStateChanged(auth, async (user) => {
+        window.actualizarUIAutenticacion(user);
+        if (user) {
+            await window.cargarCarritoDesdeFirestore(user.uid);
         }
-
-        let totalCompra = 0;
-
-        carrito.forEach((producto, index) => {
-            // Calcular precio
-            const precio = producto.title.toLowerCase().includes('sintetik') || 
-                          producto.title.toLowerCase().includes('sala') || 
-                          producto.title.toLowerCase().includes('copa') 
-                          ? 89900 : 99900;
-            totalCompra += precio;
-
-            // Crear elemento del carrito
-            const li = document.createElement('div');
-            li.classList.add('list-group-item', 'mb-2', 'border', 'rounded');
-
-            const contenido = `
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div class="d-flex gap-3 flex-grow-1">
-                        <img src="assets/img/portfolio/${producto.image}" 
-                             alt="${producto.title}" 
-                             class="rounded" 
-                             style="width: 100px; height: 100px; object-fit: cover;">
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0">${producto.title}</h6>
-                                <span class="text-success fw-bold">$${precio.toLocaleString('es-CO')}</span>
-                            </div>
-                            <div class="text-muted small mb-1">
-                                Talla: ${producto.talla} | Suela: ${producto.suela}
-                            </div>
-                            ${producto.personalizado ? 
-                                `<div class="text-primary small fw-bold">
-                                    Personalización: ${producto.nombre} | #${producto.numero}
-                                </div>` : ''}
-                        </div>
-                    </div>
-                    <button class="btn-close" aria-label="Eliminar"></button>
-                </div>
-            `;
-
-            li.innerHTML = contenido;
-            
-            // Agregar evento al botón de eliminar
-            li.querySelector('.btn-close').addEventListener('click', () => eliminarProducto(index));
-            
-            carritoItems.appendChild(li);
-        });
-
-        // Agregar el total
-        const totalHTML = `
-            <div class="mt-3 p-3 bg-light rounded border">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="fw-bold fs-5">Total de la compra:</span>
-                    <span class="fw-bold text-success fs-4">$${totalCompra.toLocaleString('es-CO')}</span>
-                </div>
-            </div>
-        `;
-        
-        carritoItems.insertAdjacentHTML('beforeend', totalHTML);
-
-        // Guardar en Firebase si hay usuario autenticado
-        if (auth.currentUser) {
-            guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
-        }
-    }
-
-    // Función para eliminar producto
-    async function eliminarProducto(index) {
-        carrito.splice(index, 1);
-        await actualizarCarritoUI(carrito);
-        if (auth.currentUser) {
-            await guardarCarritoEnFirestore(auth.currentUser.uid, carrito);
-        }
-    }
+    });
 });
