@@ -600,160 +600,67 @@ window.carrito = [];
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
-  
-// Configuración de Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyD8804T_OzHWiaS3AxuUwFe5QCRP0E9GIs",
-  authDomain: "hat-trick-9319c.firebaseapp.com",
-  projectId: "hat-trick-9319c",
-  storageBucket: "hat-trick-9319c.firebasestorage.app",
-  messagingSenderId: "303428148607",
-  appId: "1:303428148607:web:84294bbe953e9911a64e4a",
-  measurementId: "G-XENSCPPQ18"
-};
-  
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-  
-/// Función para guardar el carrito en Firestore
-window.guardarCarritoEnFirestore = async function(uid) {
-    try {
-        const carritoRef = doc(db, "carritos", uid);
-        const user = auth.currentUser;
-        
-        // Obtener datos del carrito actual
-        const datosCarrito = {
-            items: window.carrito,
-            userInfo: {
-                nombre: user.displayName || 'Usuario',
-                email: user.email,
-                lastUpdated: new Date()
-            }
-        };
-        
-        // Verificar si hay dirección de entrega guardada en localStorage
-        const direccionGuardada = localStorage.getItem(`direccionEntrega_${uid}`);
-        if (direccionGuardada) {
-            datosCarrito.direccionEntrega = JSON.parse(direccionGuardada);
-        }
-        
-        await setDoc(carritoRef, datosCarrito, { merge: true });
-        
-        console.log("Carrito guardado en Firestore");
-    } catch (error) {
-        console.error("Error al guardar en Firestore:", error);
+
+// Variables globales
+window.carrito = [];
+let firebaseInitialized = false;
+let auth = null;
+let db = null;
+
+// Obtener la configuración de Firebase desde la función
+async function initializeFirebase() {
+  try {
+    console.log('Iniciando obtención de configuración de Firebase...');
+    const response = await fetch('https://us-central1-hat-trick-9319c.cloudfunctions.net/getFirebaseConfig');
+    console.log('Respuesta recibida:', response);
+    
+    if (!response.ok) {
+      throw new Error(`Error al obtener la configuración de Firebase: ${response.status} ${response.statusText}`);
     }
-};
-
-// Función para cargar el carrito desde Firestore
-window.cargarCarritoDesdeFirestore = async function(uid) {
-    try {
-        const docRef = doc(db, "carritos", uid);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.items && Array.isArray(data.items)) {
-                window.carrito = data.items;
-                await window.actualizarCarrito();
-            }
-            
-            // Cargar dirección de entrega si existe
-            if (data.direccionEntrega) {
-                localStorage.setItem(`direccionEntrega_${uid}`, JSON.stringify(data.direccionEntrega));
-            }
-        }
-    } catch (error) {
-        console.error('Error al cargar el carrito:', error);
+    
+    const firebaseConfig = await response.json();
+    console.log('Configuración de Firebase obtenida:', firebaseConfig);
+    
+    if (!firebaseConfig.apiKey) {
+      throw new Error('La configuración de Firebase no contiene apiKey');
     }
-};
+    
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);  // Asignar a la variable global
+    db = getFirestore(app);  // Asignar a la variable global
+    
+    console.log('Firebase inicializado correctamente');
+    return { app, auth, db };
+  } catch (error) {
+    console.error('Error detallado al inicializar Firebase:', error);
+    return null;
+  }
+}
 
-// Función para actualizar la UI basada en el estado de autenticación
-window.actualizarUIAutenticacion = function(user) {
-    const loginButton = document.getElementById('loginButton');
-    const loginButtonMobile = document.getElementById('loginButtonMobile');
-    const logoutButton = document.getElementById('logoutButton');
-    const logoutButtonMobile = document.getElementById('logoutButtonMobile');
-
-    if (user) {
-        const displayName = user.displayName || 'Usuario';
-        if (loginButton) {
-            loginButton.textContent = `¡Hola, ${displayName}!`;
-            loginButton.removeAttribute('data-bs-toggle');
-            loginButton.removeAttribute('data-bs-target');
-        }
-        if (loginButtonMobile) {
-            loginButtonMobile.textContent = `¡Hola, ${displayName}!`;
-            loginButtonMobile.removeAttribute('data-bs-toggle');
-            loginButtonMobile.removeAttribute('data-bs-target');
-        }
-        if (logoutButton) logoutButton.classList.remove('d-none');
-        if (logoutButtonMobile) logoutButtonMobile.classList.remove('d-none');
-    } else {
-        if (loginButton) {
-            loginButton.textContent = 'Entrar';
-            loginButton.setAttribute('data-bs-toggle', 'modal');
-            loginButton.setAttribute('data-bs-target', '#loginModal');
-        }
-        if (loginButtonMobile) {
-            loginButtonMobile.textContent = 'Entrar';
-            loginButtonMobile.setAttribute('data-bs-toggle', 'modal');
-            loginButtonMobile.setAttribute('data-bs-target', '#loginModal');
-        }
-        if (logoutButton) logoutButton.classList.add('d-none');
-        if (logoutButtonMobile) logoutButtonMobile.classList.add('d-none');
-    }
-};
-
-// Función para manejar el inicio de sesión
-window.handleLogin = async function(provider) {
-    try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        console.log('Usuario autenticado:', user);
-
-        // Cerrar el modal de inicio de sesión
-        const loginModal = document.getElementById('loginModal');
-        const modalInstance = bootstrap.Modal.getInstance(loginModal);
-        if (modalInstance) modalInstance.hide();
-
-        // Actualizar la UI
-        window.actualizarUIAutenticacion(user);
-
-        // Cargar el carrito del usuario
-        await window.cargarCarritoDesdeFirestore(user.uid);
-
-    } catch (error) {
-        console.error('Error al iniciar sesión:', error);
-        let errorMessage = 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.';
-        
-        if (error.code === 'auth/account-exists-with-different-credential') {
-            errorMessage = 'Ya existe una cuenta con este email usando otro método de inicio de sesión.';
-        }
-        
-        alert(errorMessage);
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
+// Inicializar Firebase y manejar errores
+initializeFirebase()
+  .then(({ app }) => {
+    firebaseInitialized = true;
+    console.log('Firebase está listo para usar');
+    
     // Eventos de inicio de sesión
     const googleLoginBtn = document.getElementById('googleLogin');
     const facebookLoginBtn = document.getElementById('facebookLogin');
 
     if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', () => {
-            const provider = new GoogleAuthProvider();
-            window.handleLogin(provider);
-        });
+      googleLoginBtn.addEventListener('click', () => {
+        console.log('Intentando iniciar sesión con Google');
+        const provider = new GoogleAuthProvider();
+        window.handleLogin(provider);
+      });
     }
 
     if (facebookLoginBtn) {
-        facebookLoginBtn.addEventListener('click', () => {
-            const provider = new FacebookAuthProvider();
-            window.handleLogin(provider);
-        });
+      facebookLoginBtn.addEventListener('click', () => {
+        console.log('Intentando iniciar sesión con Facebook');
+        const provider = new FacebookAuthProvider();
+        window.handleLogin(provider);
+      });
     }
 
     // Eventos de cierre de sesión
@@ -782,4 +689,127 @@ document.addEventListener('DOMContentLoaded', () => {
             await window.cargarCarritoDesdeFirestore(user.uid);
         }
     });
-});
+
+    /// Función para guardar el carrito en Firestore
+    window.guardarCarritoEnFirestore = async function(uid) {
+        try {
+            const carritoRef = doc(db, "carritos", uid);
+            const user = auth.currentUser;
+            
+            // Obtener datos del carrito actual
+            const datosCarrito = {
+                items: window.carrito,
+                userInfo: {
+                    nombre: user.displayName || 'Usuario',
+                    email: user.email,
+                    lastUpdated: new Date()
+                }
+            };
+            
+            // Verificar si hay dirección de entrega guardada en localStorage
+            const direccionGuardada = localStorage.getItem(`direccionEntrega_${uid}`);
+            if (direccionGuardada) {
+                datosCarrito.direccionEntrega = JSON.parse(direccionGuardada);
+            }
+            
+            await setDoc(carritoRef, datosCarrito, { merge: true });
+            
+            console.log("Carrito guardado en Firestore");
+        } catch (error) {
+            console.error("Error al guardar en Firestore:", error);
+        }
+    };
+
+    // Función para cargar el carrito desde Firestore
+    window.cargarCarritoDesdeFirestore = async function(uid) {
+        try {
+            const docRef = doc(db, "carritos", uid);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.items && Array.isArray(data.items)) {
+                    window.carrito = data.items;
+                    await window.actualizarCarrito();
+                }
+                
+                // Cargar dirección de entrega si existe
+                if (data.direccionEntrega) {
+                    localStorage.setItem(`direccionEntrega_${uid}`, JSON.stringify(data.direccionEntrega));
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar el carrito:', error);
+        }
+    };
+
+    // Función para actualizar la UI basada en el estado de autenticación
+    window.actualizarUIAutenticacion = function(user) {
+        const loginButton = document.getElementById('loginButton');
+        const loginButtonMobile = document.getElementById('loginButtonMobile');
+        const logoutButton = document.getElementById('logoutButton');
+        const logoutButtonMobile = document.getElementById('logoutButtonMobile');
+
+        if (user) {
+            const displayName = user.displayName || 'Usuario';
+            if (loginButton) {
+                loginButton.textContent = `¡Hola, ${displayName}!`;
+                loginButton.removeAttribute('data-bs-toggle');
+                loginButton.removeAttribute('data-bs-target');
+            }
+            if (loginButtonMobile) {
+                loginButtonMobile.textContent = `¡Hola, ${displayName}!`;
+                loginButtonMobile.removeAttribute('data-bs-toggle');
+                loginButtonMobile.removeAttribute('data-bs-target');
+            }
+            if (logoutButton) logoutButton.classList.remove('d-none');
+            if (logoutButtonMobile) logoutButtonMobile.classList.remove('d-none');
+        } else {
+            if (loginButton) {
+                loginButton.textContent = 'Iniciar Sesión';
+                loginButton.setAttribute('data-bs-toggle', 'modal');
+                loginButton.setAttribute('data-bs-target', '#loginModal');
+            }
+            if (loginButtonMobile) {
+                loginButtonMobile.textContent = 'Entrar';
+                loginButtonMobile.setAttribute('data-bs-toggle', 'modal');
+                loginButtonMobile.setAttribute('data-bs-target', '#loginModal');
+            }
+            if (logoutButton) logoutButton.classList.add('d-none');
+            if (logoutButtonMobile) logoutButtonMobile.classList.add('d-none');
+        }
+    };
+
+    // Función para manejar el inicio de sesión
+    window.handleLogin = async function(provider) {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            console.log('Usuario autenticado:', user);
+
+            // Cerrar el modal de inicio de sesión
+            const loginModal = document.getElementById('loginModal');
+            const modalInstance = bootstrap.Modal.getInstance(loginModal);
+            if (modalInstance) modalInstance.hide();
+
+            // Actualizar la UI
+            window.actualizarUIAutenticacion(user);
+
+            // Cargar el carrito del usuario
+            await window.cargarCarritoDesdeFirestore(user.uid);
+
+        } catch (error) {
+            console.error('Error al iniciar sesión:', error);
+            let errorMessage = 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.';
+            
+            if (error.code === 'auth/account-exists-with-different-credential') {
+                errorMessage = 'Ya existe una cuenta con este email usando otro método de inicio de sesión.';
+            }
+            
+            alert(errorMessage);
+        }
+    };
+  })
+  .catch(error => {
+    console.error('Error en la inicialización de Firebase:', error);
+  });
