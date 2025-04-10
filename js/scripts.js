@@ -551,14 +551,41 @@ window.carrito = [];
         btnComprar.addEventListener('click', () => {
             const user = auth.currentUser;
             if (!user) {
-                alert('Debes iniciar sesión para realizar una compra.');
-                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-                loginModal.show();
+                // Mostrar modal de alerta estilizado en lugar de alert()
+                const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                document.getElementById('alertMessage').textContent = 'Debes iniciar sesión para realizar una compra.';
+                document.getElementById('alertTitle').textContent = 'Inicio de sesión requerido';
+                
+                // Obtener el botón Aceptar
+                const btnAceptar = document.querySelector('#alertModal .btn-dark');
+                
+                // Eliminar cualquier evento anterior
+                const nuevoBtn = btnAceptar.cloneNode(true);
+                btnAceptar.parentNode.replaceChild(nuevoBtn, btnAceptar);
+                
+                // Agregar evento para mostrar el modal de inicio de sesión
+                nuevoBtn.addEventListener('click', () => {
+                    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                    loginModal.show();
+                });
+                
+                alertModal.show();
+                
+                // Cerrar el modal del carrito
+                const carritoModal = bootstrap.Modal.getInstance(document.getElementById('carritoModal'));
+                if (carritoModal) {
+                    carritoModal.hide();
+                }
+                
                 return;
             }
             
             if (!window.carrito || window.carrito.length === 0) {
-                alert('Tu carrito está vacío. Por favor, agrega productos antes de proceder con la compra.');
+                // Mostrar modal de alerta estilizado en lugar de alert()
+                const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                document.getElementById('alertMessage').textContent = 'Tu carrito está vacío. Por favor, agrega productos antes de proceder con la compra.';
+                document.getElementById('alertTitle').textContent = 'Carrito vacío';
+                alertModal.show();
                 return;
             }
             
@@ -596,14 +623,23 @@ window.guardarCarritoEnFirestore = async function(uid) {
         const carritoRef = doc(db, "carritos", uid);
         const user = auth.currentUser;
         
-        await setDoc(carritoRef, {
+        // Obtener datos del carrito actual
+        const datosCarrito = {
             items: window.carrito,
             userInfo: {
                 nombre: user.displayName || 'Usuario',
                 email: user.email,
                 lastUpdated: new Date()
             }
-        }, { merge: true });
+        };
+        
+        // Verificar si hay dirección de entrega guardada en localStorage
+        const direccionGuardada = localStorage.getItem(`direccionEntrega_${uid}`);
+        if (direccionGuardada) {
+            datosCarrito.direccionEntrega = JSON.parse(direccionGuardada);
+        }
+        
+        await setDoc(carritoRef, datosCarrito, { merge: true });
         
         console.log("Carrito guardado en Firestore");
     } catch (error) {
@@ -622,6 +658,11 @@ window.cargarCarritoDesdeFirestore = async function(uid) {
             if (data.items && Array.isArray(data.items)) {
                 window.carrito = data.items;
                 await window.actualizarCarrito();
+            }
+            
+            // Cargar dirección de entrega si existe
+            if (data.direccionEntrega) {
+                localStorage.setItem(`direccionEntrega_${uid}`, JSON.stringify(data.direccionEntrega));
             }
         }
     } catch (error) {

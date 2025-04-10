@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // Configuración de Firebase
@@ -27,6 +27,29 @@ const formularioEntrega = document.getElementById('formularioEntrega');
 // Variables globales
 let carritoActual = [];
 let usuarioActual = null;
+
+// Función para mostrar alerta estilizada
+function mostrarAlerta(titulo, mensaje, redirigir = false) {
+    const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+    document.getElementById('alertTitle').textContent = titulo;
+    document.getElementById('alertMessage').textContent = mensaje;
+    
+    // Obtener el botón Aceptar
+    const btnAceptar = document.querySelector('#alertModal .btn-dark');
+    
+    // Eliminar cualquier evento anterior
+    const nuevoBtn = btnAceptar.cloneNode(true);
+    btnAceptar.parentNode.replaceChild(nuevoBtn, btnAceptar);
+    
+    // Agregar evento para redirigir si es necesario
+    if (redirigir) {
+        nuevoBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+    }
+    
+    alertModal.show();
+}
 
 // Función para cargar los datos del usuario y el carrito
 async function cargarDatosUsuario(user) {
@@ -59,13 +82,26 @@ async function cargarDatosUsuario(user) {
                     document.getElementById('estado').value = direccionEntrega.estado || '';
                     document.getElementById('telefono').value = direccionEntrega.telefono || '';
                     document.getElementById('instrucciones').value = direccionEntrega.instrucciones || '';
+                    
+                    // Guardar en localStorage para futuras compras
+                    localStorage.setItem(`direccionEntrega_${user.uid}`, JSON.stringify(direccionEntrega));
                 }
             }
         }
 
+        // Intentar cargar datos de dirección desde localStorage
+        const direccionGuardada = localStorage.getItem(`direccionEntrega_${user.uid}`);
+        if (direccionGuardada) {
+            const direccionEntrega = JSON.parse(direccionGuardada);
+            document.getElementById('direccion').value = direccionEntrega.direccion || '';
+            document.getElementById('ciudad').value = direccionEntrega.ciudad || '';
+            document.getElementById('estado').value = direccionEntrega.estado || '';
+            document.getElementById('telefono').value = direccionEntrega.telefono || '';
+            document.getElementById('instrucciones').value = direccionEntrega.instrucciones || '';
+        }
+
         if (!carritoActual || carritoActual.length === 0) {
-            alert('Tu carrito está vacío. Serás redirigido a la página principal.');
-            window.location.href = 'index.html';
+            mostrarAlerta('Carrito vacío', 'Tu carrito está vacío. Serás redirigido a la página principal.', true);
             return;
         }
 
@@ -73,8 +109,7 @@ async function cargarDatosUsuario(user) {
         actualizarResumenCarrito();
     } catch (error) {
         console.error("Error al cargar datos:", error);
-        alert('Hubo un error al cargar tu carrito. Por favor, intenta nuevamente.');
-        window.location.href = 'index.html';
+        mostrarAlerta('Error', 'Hubo un error al cargar tu carrito. Por favor, intenta nuevamente.', true);
     }
 }
 
@@ -134,7 +169,7 @@ if (formularioEntrega) {
         e.preventDefault();
 
         if (!usuarioActual) {
-            alert('Debes iniciar sesión para continuar');
+            mostrarAlerta('Error de sesión', 'Debes iniciar sesión para continuar');
             return;
         }
 
@@ -157,17 +192,20 @@ if (formularioEntrega) {
             // Generar número de pedido
             const numeroPedido = generarNumeroPedido();
 
-            // Guardar en Firestore
-            const docRef = doc(db, "carritos", usuarioActual.uid);
-            await updateDoc(docRef, {
+            // Guardar en Firestore - Colección carritos
+            const carritoDocRef = doc(db, "carritos", usuarioActual.uid);
+            await updateDoc(carritoDocRef, {
                 direccionEntrega: direccionEntrega,
                 fechaActualizacion: new Date(),
                 estado: 'pendiente_pago',
                 numeroPedido: numeroPedido
             });
 
+            // Guardar en localStorage para futuras compras
+            localStorage.setItem(`direccionEntrega_${usuarioActual.uid}`, JSON.stringify(direccionEntrega));
+
             // Mostrar mensaje de éxito
-            alert('¡Datos de entrega guardados correctamente!');
+            mostrarAlerta('Éxito', '¡Datos de entrega guardados correctamente!');
             
             // Mostrar el número de pedido en el modal
             const numeroPedidoElement = document.getElementById('numeroPedido');
@@ -186,7 +224,7 @@ if (formularioEntrega) {
             }
         } catch (error) {
             console.error("Error al guardar la dirección:", error);
-            alert('Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.');
+            mostrarAlerta('Error', 'Hubo un error al procesar tu pedido. Por favor, intenta nuevamente.');
             
             // Restaurar el botón en caso de error
             const btnPagar = document.getElementById('btnPagar');
@@ -206,8 +244,7 @@ onAuthStateChanged(auth, (user) => {
         if (user) {
             cargarDatosUsuario(user);
         } else {
-            alert('Debes iniciar sesión para realizar una compra. Serás redirigido a la página principal.');
-            window.location.href = 'index.html';
+            mostrarAlerta('Inicio de sesión requerido', 'Debes iniciar sesión para realizar una compra. Serás redirigido a la página principal.', true);
         }
     }
 }); 
