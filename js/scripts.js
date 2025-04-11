@@ -1,4 +1,3 @@
-// Accion del NavBar
 document.addEventListener('DOMContentLoaded', () => {
     // Navbar shrink function
     const navbarShrink = () => {
@@ -172,399 +171,202 @@ window.carrito = [];
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalDescription').textContent = description;
   
-            const carouselItems = document.getElementById('carouselItems');
-            carouselItems.innerHTML = '';
-  
-            // Crear una variable para almacenar las miniaturas
-            let thumbnailsHTML = '';
+            // Configuración de la imagen principal
+            const mainImage = document.getElementById('mainProductImage');
+            mainImage.src = `assets/img/portfolio/${images[0]}`;
+            mainImage.alt = title;
             
-            // Generar el HTML para cada imagen
-            images.forEach((image, index) => {
-                const carouselItem = document.createElement('div');
-                carouselItem.classList.add('carousel-item');
-                if (index === 0) carouselItem.classList.add('active');
-
-                const modalContent = document.createElement('div');
-                modalContent.classList.add('modal-content');
-
-                // Imagen con funcionalidad de ampliación
-                const imgContainer = document.createElement('div');
-                imgContainer.style.textAlign = 'center';
-                imgContainer.style.marginBottom = '15px';
-                imgContainer.style.cursor = 'pointer';
-                imgContainer.id = `main-image-container-${index}`;
-
-                const img = document.createElement('img');
-                img.src = `assets/img/portfolio/${image}`;
-                img.id = `main-image-${index}`;
-                img.alt = title;
-                img.style.maxHeight = '220px';
-                img.style.width = 'auto';
-                img.style.transition = 'transform 0.3s ease';
-                
-                // Agregar evento de clic para ampliar la imagen
-                img.addEventListener('click', () => {
-                    const modal = document.createElement('div');
-                    modal.style.position = 'fixed';
-                    modal.style.top = '0';
-                    modal.style.left = '0';
-                    modal.style.width = '100%';
-                    modal.style.height = '100%';
-                    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-                    modal.style.display = 'flex';
-                    modal.style.justifyContent = 'center';
-                    modal.style.alignItems = 'center';
-                    modal.style.zIndex = '9999';
-                    modal.style.cursor = 'pointer';
-
-                    const enlargedImg = document.createElement('img');
-                    enlargedImg.src = img.src;
-                    enlargedImg.style.maxWidth = '90%';
-                    enlargedImg.style.maxHeight = '90vh';
-                    enlargedImg.style.objectFit = 'contain';
-
-                    modal.appendChild(enlargedImg);
-                    document.body.appendChild(modal);
-
-                    // Cerrar al hacer clic en cualquier parte
-                    modal.addEventListener('click', () => {
-                        document.body.removeChild(modal);
-                    });
-                });
-
-                imgContainer.appendChild(img);
-                modalContent.appendChild(imgContainer);
-                
-                // Crear el contenedor de miniaturas para cada slide
-                const thumbnailsContainer = document.createElement('div');
-                thumbnailsContainer.classList.add('thumbnails-container');
-                thumbnailsContainer.style.display = 'flex';
-                thumbnailsContainer.style.justifyContent = 'center';
-                thumbnailsContainer.style.flexWrap = 'wrap';
-                thumbnailsContainer.style.gap = '5px';
-                thumbnailsContainer.style.maxWidth = '100%';
-                thumbnailsContainer.style.marginBottom = '20px';
-                thumbnailsContainer.style.overflowX = 'auto';
-                thumbnailsContainer.style.padding = '5px 0';
-                
-                // Añadir todas las miniaturas a cada slide
-                images.forEach((thumbImage, thumbIndex) => {
-                    const thumbnail = document.createElement('div');
-                    thumbnail.style.width = '60px';
-                    thumbnail.style.height = '60px';
-                    thumbnail.style.cursor = 'pointer';
-                    thumbnail.style.border = thumbIndex === index ? '2px solid #ffc800' : '2px solid transparent';
-                    thumbnail.style.borderRadius = '4px';
-                    thumbnail.style.overflow = 'hidden';
-                    thumbnail.style.transition = 'all 0.2s ease';
-                    thumbnail.style.flexShrink = '0';
-                    
-                    const thumbImg = document.createElement('img');
-                    thumbImg.src = `assets/img/portfolio/${thumbImage}`;
-                    thumbImg.alt = `Miniatura ${thumbIndex + 1}`;
-                    thumbImg.style.width = '100%';
-                    thumbImg.style.height = '100%';
-                    thumbImg.style.objectFit = 'cover';
-                    
-                    thumbnail.appendChild(thumbImg);
-                    
-                    // Evento al hacer clic en una miniatura
-                    thumbnail.addEventListener('click', () => {
-                        // Si estamos en el mismo slide, solo cambiar la imagen principal
-                        if (index === thumbIndex) {
-                            return;
-                        }
-                        
-                        // Si estamos en otro slide, activar ese slide del carrusel
-                        const carousel = new bootstrap.Carousel(document.getElementById('modalCarousel'));
-                        carousel.to(thumbIndex);
-                    });
-                    
-                    thumbnailsContainer.appendChild(thumbnail);
-                });
-                
-                modalContent.appendChild(thumbnailsContainer);
-
-                // Contenedor de selección
-                const selectionContainer = document.createElement('div');
-                selectionContainer.style.maxWidth = '300px';
-                selectionContainer.style.margin = '0 auto';
-                selectionContainer.style.padding = '0 15px';
-
-                // Talla
-                const tallaContainer = document.createElement('div');
-                tallaContainer.style.marginBottom = '15px';
-
-                const tallaLabel = document.createElement('label');
-                tallaLabel.textContent = 'Talla:';
-                tallaLabel.style.display = 'block';
-                tallaLabel.style.marginBottom = '5px';
-                tallaLabel.style.fontWeight = 'bold';
-
-                const tallaSelect = document.createElement('select');
-                tallaSelect.className = 'form-select';
-                tallaSelect.style.height = '35px';
-                tallaSelect.innerHTML = `
-                    <option value="" disabled selected>Selecciona talla</option>
-                    <option value="32">32</option>
-                    <option value="33">33</option>
-                    <option value="34">34</option>
-                    <option value="35">35</option>
-                    <option value="36">36</option>
-                    <option value="37">37</option>
-                    <option value="38">38</option>
-                    <option value="39">39</option>
-                    <option value="40">40</option>
-                    <option value="41">41</option>
-                    <option value="42">42</option>
-                    <option value="43">43</option>
-                `;
-
-                tallaContainer.appendChild(tallaLabel);
-                tallaContainer.appendChild(tallaSelect);
-                selectionContainer.appendChild(tallaContainer);
-
-                // Suela
-                const suelaContainer = document.createElement('div');
-                suelaContainer.style.marginBottom = '15px';
-
-                const suelaLabel = document.createElement('label');
-                suelaLabel.textContent = 'Suela:';
-                suelaLabel.style.display = 'block';
-                suelaLabel.style.marginBottom = '5px';
-                suelaLabel.style.fontWeight = 'bold';
-
-                const suelaSelect = document.createElement('select');
-                suelaSelect.className = 'form-select';
-                suelaSelect.style.height = '35px';
-                suelaSelect.innerHTML = `
-                    <option value="" disabled selected>Selecciona suela</option>
-                    <option value="Goma">Goma</option>
-                    <option value="Colores">Colores</option>
-                    <option value="Negra">Negra</option>
-                    <option value="Sintética>Sintética</option>
-                `;
-
-                suelaContainer.appendChild(suelaLabel);
-                suelaContainer.appendChild(suelaSelect);
-                selectionContainer.appendChild(suelaContainer);
-
-                // Contenedor de opciones de personalización
-                const personalizacionOptionsContainer = document.createElement('div');
-                personalizacionOptionsContainer.style.marginBottom = '15px';
-                personalizacionOptionsContainer.style.textAlign = 'left';
-
-                const personalizacionLabel = document.createElement('label');
-                personalizacionLabel.textContent = '¿Deseas ponerle nombre y número de jugador a tus zapatillas?';
-                personalizacionLabel.style.display = 'block';
-                personalizacionLabel.style.marginBottom = '5px';
-                personalizacionLabel.style.fontWeight = 'light';
-
-                // Radio buttons
-                const radioContainer = document.createElement('div');
-                radioContainer.style.marginBottom = '15px';
-                radioContainer.style.display = 'flex';
-                radioContainer.style.gap = '20px';
-
-                // Opción Sí
-                const siContainer = document.createElement('div');
-                siContainer.style.display = 'flex';
-                siContainer.style.alignItems = 'center';
-                const siRadio = document.createElement('input');
-                siRadio.type = 'radio';
-                siRadio.name = 'personalizacion';
-                siRadio.id = 'personalizacionSi';
-                siRadio.value = 'si';
-                const siLabel = document.createElement('label');
-                siLabel.htmlFor = 'personalizacionSi';
-                siLabel.textContent = ' Sí';
-                siLabel.style.marginLeft = '5px';
-                siContainer.appendChild(siRadio);
-                siContainer.appendChild(siLabel);
-
-                // Opción No
-                const noContainer = document.createElement('div');
-                noContainer.style.display = 'flex';
-                noContainer.style.alignItems = 'center';
-                const noRadio = document.createElement('input');
-                noRadio.type = 'radio';
-                noRadio.name = 'personalizacion';
-                noRadio.id = 'personalizacionNo';
-                noRadio.value = 'no';
-                const noLabel = document.createElement('label');
-                noLabel.htmlFor = 'personalizacionNo';
-                noLabel.textContent = ' No';
-                noLabel.style.marginLeft = '5px';
-                noContainer.appendChild(noRadio);
-                noContainer.appendChild(noLabel);
-
-                radioContainer.appendChild(siContainer);
-                radioContainer.appendChild(noContainer);
-
-                personalizacionOptionsContainer.appendChild(personalizacionLabel);
-                personalizacionOptionsContainer.appendChild(radioContainer);
-                selectionContainer.appendChild(personalizacionOptionsContainer);
-
-                // Contenedor de campos de personalización (inicialmente oculto)
-                const personalizacionContainer = document.createElement('div');
-                personalizacionContainer.style.display = 'none';
-                personalizacionContainer.style.marginBottom = '15px';
-
-                const nombreLabel = document.createElement('label');
-                nombreLabel.textContent = 'Nombre del Jugador:';
-                nombreLabel.style.display = 'block';
-                nombreLabel.style.marginBottom = '5px';
-                nombreLabel.style.fontWeight = 'bold';
-
-                const nombreInput = document.createElement('input');
-                nombreInput.type = 'text';
-                nombreInput.className = 'form-control';
-                nombreInput.placeholder = 'Ingresa el nombre';
-                nombreInput.style.marginBottom = '10px';
-
-                const numeroLabel = document.createElement('label');
-                numeroLabel.textContent = 'Número del Jugador:';
-                numeroLabel.style.display = 'block';
-                numeroLabel.style.marginBottom = '5px';
-                numeroLabel.style.fontWeight = 'bold';
-
-                const numeroInput = document.createElement('input');
-                numeroInput.type = 'number';
-                numeroInput.className = 'form-control';
-                numeroInput.placeholder = 'Ingresa el número';
-
-                personalizacionContainer.appendChild(nombreLabel);
-                personalizacionContainer.appendChild(nombreInput);
-                personalizacionContainer.appendChild(numeroLabel);
-                personalizacionContainer.appendChild(numeroInput);
-                selectionContainer.appendChild(personalizacionContainer);
-
-                // Botón
-                const buttonContainer = document.createElement('div');
-                buttonContainer.style.textAlign = 'center';
-                buttonContainer.style.marginTop = '15px';
-
-                const button = document.createElement('button');
-                button.textContent = 'Agregar al Carrito!';
-                button.className = 'btn btn-secondary';  // Inicia gris
-                button.style.width = '100%';
-                button.style.height = '35px';
-                button.style.transition = 'all 0.3s ease';
-                button.disabled = true;
-
-                // Función para validar la selección
-                const validarSeleccion = () => {
-                    const personalizacionSeleccionada = document.querySelector('input[name="personalizacion"]:checked')?.value;
-                    
-                    if (!tallaSelect.value || !suelaSelect.value || !personalizacionSeleccionada) {
-                        button.disabled = true;
-                        button.className = 'btn btn-secondary';
-                        button.style.backgroundColor = '#6c757d';
-                        return;
-                    }
-
-                    if (personalizacionSeleccionada === 'si') {
-                        if (!nombreInput.value.trim() || !numeroInput.value.trim()) {
-                            button.disabled = true;
-                            button.className = 'btn btn-secondary';
-                            button.style.backgroundColor = '#6c757d';
-                        } else {
-                            button.disabled = false;
-                            button.className = 'btn btn-success';
-                            button.style.backgroundColor = '#198754';
-                        }
-                    } else {
-                        button.disabled = false;
-                        button.className = 'btn btn-success';
-                        button.style.backgroundColor = '#198754';
-                    }
-                };
-
-                // Event listeners para la personalización
-                siRadio.addEventListener('change', () => {
-                    personalizacionContainer.style.display = 'block';
-                    validarSeleccion();
-                });
-
-                noRadio.addEventListener('change', () => {
-                    personalizacionContainer.style.display = 'none';
-                    nombreInput.value = '';
-                    numeroInput.value = '';
-                    validarSeleccion();
-                });
-
-                tallaSelect.addEventListener('change', validarSeleccion);
-                suelaSelect.addEventListener('change', validarSeleccion);
-                nombreInput.addEventListener('input', validarSeleccion);
-                numeroInput.addEventListener('input', validarSeleccion);
-
-                button.addEventListener('click', async () => {
-                    const personalizacionSeleccionada = document.querySelector('input[name="personalizacion"]:checked')?.value;
-                    
-                    // Validación adicional antes de agregar al carrito
-                    if (!personalizacionSeleccionada || !tallaSelect.value || !suelaSelect.value) {
-                        alert('Por favor, completa todos los campos requeridos');
-                        return;
-                    }
-
-                    if (personalizacionSeleccionada === 'si' && (!nombreInput.value.trim() || !numeroInput.value.trim())) {
-                        alert('Por favor, completa los campos de personalización');
-                        return;
-                    }
-
-                    // Crear el objeto del producto
-                    const producto = {
-                        title,
-                        image: image,
-                        talla: tallaSelect.value,
-                        suela: suelaSelect.value,
-                        personalizado: personalizacionSeleccionada === 'si'
-                    };
-
-                    // Agregar datos de personalización si corresponde
-                    if (personalizacionSeleccionada === 'si') {
-                        producto.nombre = nombreInput.value.trim();
-                        producto.numero = numeroInput.value.trim();
-                    }
-
-                    if (!verificarLoginYAgregar(producto)) {
-                        return;
-                    }
-
-                    window.carrito.push(producto);
-                    await window.actualizarCarrito();
-                    showSuccessModal();
-                });
-
-                buttonContainer.appendChild(button);
-                selectionContainer.appendChild(buttonContainer);
-                modalContent.appendChild(selectionContainer);
-
-                carouselItem.appendChild(modalContent);
-                carouselItems.appendChild(carouselItem);
+            // Limpiamos los event listeners antiguos para evitar duplicados
+            const mainImageClone = mainImage.cloneNode(true);
+            mainImage.parentNode.replaceChild(mainImageClone, mainImage);
+            
+            // Funcionalidad de zoom para la imagen principal
+            mainImageClone.addEventListener('click', () => {
+                showZoomedImage(mainImageClone.src);
             });
-  
+            
+            // Generar las miniaturas
+            const thumbnailsContainer = document.getElementById('thumbnailsContainer');
+            thumbnailsContainer.innerHTML = '';
+            
+            images.forEach((image, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.style.width = '70px';
+                thumbnail.style.height = '70px';
+                thumbnail.style.cursor = 'pointer';
+                thumbnail.style.border = index === 0 ? '2px solid #ffc800' : '2px solid transparent';
+                thumbnail.style.borderRadius = '4px';
+                thumbnail.style.overflow = 'hidden';
+                thumbnail.style.transition = 'all 0.2s ease';
+                thumbnail.setAttribute('data-image-index', index);
+                
+                const thumbImg = document.createElement('img');
+                thumbImg.src = `assets/img/portfolio/${image}`;
+                thumbImg.alt = `Miniatura ${index + 1}`;
+                thumbImg.style.width = '100%';
+                thumbImg.style.height = '100%';
+                thumbImg.style.objectFit = 'cover';
+                
+                thumbnail.appendChild(thumbImg);
+                
+                // Evento al hacer clic en una miniatura
+                thumbnail.addEventListener('click', (e) => {
+                    // Actualizar la imagen principal
+                    mainImageClone.src = `assets/img/portfolio/${image}`;
+                    
+                    // Actualizar el borde de las miniaturas
+                    thumbnailsContainer.querySelectorAll('div').forEach(thumb => {
+                        thumb.style.border = '2px solid transparent';
+                    });
+                    thumbnail.style.border = '2px solid #ffc800';
+                });
+                
+                thumbnailsContainer.appendChild(thumbnail);
+            });
+
+            // Función para mostrar imagen ampliada
+            function showZoomedImage(src) {
+                const modal = document.createElement('div');
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+                modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+                modal.style.display = 'flex';
+                modal.style.justifyContent = 'center';
+                modal.style.alignItems = 'center';
+                modal.style.zIndex = '9999';
+                modal.style.cursor = 'pointer';
+
+                const enlargedImg = document.createElement('img');
+                enlargedImg.src = src;
+                enlargedImg.style.maxWidth = '90%';
+                enlargedImg.style.maxHeight = '90vh';
+                enlargedImg.style.objectFit = 'contain';
+
+                modal.appendChild(enlargedImg);
+                document.body.appendChild(modal);
+
+                // Cerrar al hacer clic en cualquier parte
+                modal.addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                });
+            }
+            
+            // Configurar los campos de formulario y validaciones
+            const tallaSelect = document.getElementById('tallaSelect');
+            const suelaSelect = document.getElementById('suelaSelect');
+            const personalizacionSi = document.getElementById('personalizacionSi');
+            const personalizacionNo = document.getElementById('personalizacionNo');
+            const camposPersonalizacion = document.getElementById('camposPersonalizacion');
+            const nombreJugador = document.getElementById('nombreJugador');
+            const numeroJugador = document.getElementById('numeroJugador');
+            const btnAgregarCarrito = document.getElementById('btnAgregarCarrito');
+            
+            // Clonar y reemplazar el botón para eliminar event listeners antiguos
+            const btnAgregarCarritoClone = btnAgregarCarrito.cloneNode(true);
+            btnAgregarCarrito.parentNode.replaceChild(btnAgregarCarritoClone, btnAgregarCarrito);
+            
+            // Limpiar valores anteriores
+            tallaSelect.value = '';
+            suelaSelect.value = '';
+            personalizacionSi.checked = false;
+            personalizacionNo.checked = false;
+            nombreJugador.value = '';
+            numeroJugador.value = '';
+            camposPersonalizacion.style.display = 'none';
+            btnAgregarCarritoClone.disabled = true;
+            btnAgregarCarritoClone.className = 'btn btn-secondary w-100';
+            
+            // Configurar eventos
+            personalizacionSi.addEventListener('change', () => {
+                camposPersonalizacion.style.display = 'block';
+                validarFormulario();
+            });
+            
+            personalizacionNo.addEventListener('change', () => {
+                camposPersonalizacion.style.display = 'none';
+                nombreJugador.value = '';
+                numeroJugador.value = '';
+                validarFormulario();
+            });
+            
+            // Validación del formulario
+            function validarFormulario() {
+                const personalizacionSeleccionada = document.querySelector('input[name="personalizacionRadio"]:checked')?.value;
+                
+                if (!tallaSelect.value || !suelaSelect.value || !personalizacionSeleccionada) {
+                    btnAgregarCarritoClone.disabled = true;
+                    btnAgregarCarritoClone.className = 'btn btn-secondary w-100';
+                    return;
+                }
+                
+                if (personalizacionSeleccionada === 'si') {
+                    if (!nombreJugador.value.trim() || !numeroJugador.value.trim()) {
+                        btnAgregarCarritoClone.disabled = true;
+                        btnAgregarCarritoClone.className = 'btn btn-secondary w-100';
+                    } else {
+                        btnAgregarCarritoClone.disabled = false;
+                        btnAgregarCarritoClone.className = 'btn btn-success w-100';
+                    }
+                } else {
+                    btnAgregarCarritoClone.disabled = false;
+                    btnAgregarCarritoClone.className = 'btn btn-success w-100';
+                }
+            }
+            
+            // Agregar eventos de validación
+            tallaSelect.addEventListener('change', validarFormulario);
+            suelaSelect.addEventListener('change', validarFormulario);
+            nombreJugador.addEventListener('input', validarFormulario);
+            numeroJugador.addEventListener('input', validarFormulario);
+            
+            // Evento de agregar al carrito
+            btnAgregarCarritoClone.addEventListener('click', async () => {
+                const personalizacionSeleccionada = document.querySelector('input[name="personalizacionRadio"]:checked')?.value;
+                
+                // Validación adicional antes de agregar al carrito
+                if (!personalizacionSeleccionada || !tallaSelect.value || !suelaSelect.value) {
+                    alert('Por favor, completa todos los campos requeridos');
+                    return;
+                }
+                
+                if (personalizacionSeleccionada === 'si' && (!nombreJugador.value.trim() || !numeroJugador.value.trim())) {
+                    alert('Por favor, completa los campos de personalización');
+                    return;
+                }
+                
+                // Obtener la imagen seleccionada actualmente
+                const imagenActual = mainImageClone.src.split('/').pop();
+                
+                // Crear el objeto del producto
+                const producto = {
+                    title,
+                    image: imagenActual,
+                    talla: tallaSelect.value,
+                    suela: suelaSelect.value,
+                    personalizado: personalizacionSeleccionada === 'si'
+                };
+                
+                // Agregar datos de personalización si corresponde
+                if (personalizacionSeleccionada === 'si') {
+                    producto.nombre = nombreJugador.value.trim();
+                    producto.numero = numeroJugador.value.trim();
+                }
+                
+                if (!verificarLoginYAgregar(producto)) {
+                    return;
+                }
+                
+                window.carrito.push(producto);
+                await window.actualizarCarrito();
+                showSuccessModal();
+            });
+            
             const modalElement = document.getElementById('portfolioModal');
             const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modal.show();
-            
-            // Agregar un evento para el cambio de slide del carrusel
-            const carouselElement = document.getElementById('modalCarousel');
-            carouselElement.addEventListener('slid.bs.carousel', function (event) {
-                // Obtener el índice del slide activo
-                const activeIndex = event.to;
-                
-                // Actualizar todas las miniaturas en todos los slides
-                document.querySelectorAll('.thumbnails-container > div').forEach((thumb, idx) => {
-                    if (idx % images.length === activeIndex) {
-                        thumb.style.border = '2px solid #ffc800';
-                        thumb.classList.add('active');
-                    } else {
-                        thumb.style.border = '2px solid transparent';
-                        thumb.classList.remove('active');
-                    }
-                });
-            });
         });
     });
   
@@ -844,6 +646,20 @@ initializeFirebase()
     // Función para manejar el inicio de sesión
     window.handleLogin = async function(provider) {
         try {
+            // Si es Facebook, verificar si estamos en HTTPS
+            if (provider instanceof FacebookAuthProvider && window.location.protocol !== 'https:') {
+                // Mostrar un modal de alerta personalizado
+                const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                document.getElementById('alertTitle').textContent = 'Error de Autenticación';
+                document.getElementById('alertMessage').innerHTML = 
+                    'Facebook requiere una conexión segura (HTTPS) para el inicio de sesión.<br><br>' +
+                    'Por favor:<br>' +
+                    '1. Utiliza Google para iniciar sesión localmente, o<br>' +
+                    '2. Accede a la versión en línea con HTTPS de la aplicación.';
+                alertModal.show();
+                return;
+            }
+            
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             console.log('Usuario autenticado:', user);
@@ -862,12 +678,30 @@ initializeFirebase()
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             let errorMessage = 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.';
+            let errorTitle = 'Error de Autenticación';
             
             if (error.code === 'auth/account-exists-with-different-credential') {
                 errorMessage = 'Ya existe una cuenta con este email usando otro método de inicio de sesión.';
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                errorMessage = 'La ventana de inicio de sesión fue cerrada antes de completar el proceso.';
+            } else if (error.code === 'auth/popup-blocked') {
+                errorMessage = 'El navegador bloqueó la ventana emergente. Por favor, permita ventanas emergentes para este sitio.';
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                return; // No mostrar error si el usuario canceló
+            } else if (error.code && error.code.includes('facebook')) {
+                errorTitle = 'Error con Facebook';
+                errorMessage = 
+                    'Facebook detectó que la aplicación no usa una conexión segura (HTTPS).<br><br>' +
+                    'Por favor:<br>' +
+                    '1. Utiliza Google para iniciar sesión localmente, o<br>' +
+                    '2. Accede a la versión en línea con HTTPS de la aplicación.';
             }
             
-            alert(errorMessage);
+            // Mostrar modal de alerta personalizado
+            const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+            document.getElementById('alertTitle').textContent = errorTitle;
+            document.getElementById('alertMessage').innerHTML = errorMessage;
+            alertModal.show();
         }
     };
 

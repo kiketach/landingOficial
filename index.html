@@ -311,32 +311,103 @@
         </footer>
     <!-- Modal Catalogo-->
 <div class="portfolio-modal modal fade" id="portfolioModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
             <button class="btn-close" data-bs-dismiss="modal" type="button">
             </button>
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="modal-body text-center">
+                    <div class="col-lg-10">
+                        <div class="modal-body">
                             <!-- Título del modal -->
-                            <h2 class="text-uppercase" id="modalTitle">Modelo</h2>
+                            <h2 class="text-uppercase text-center" id="modalTitle">Modelo</h2>
                             <!-- Descripción -->
-                            <p class="item-intro text-muted" id="modalDescription"></p>
-                            <!-- Carrusel de imágenes -->
-                            <div id="modalCarousel" class="carousel slide" data-bs-ride="false">
-                                <div class="carousel-inner" id="carouselItems">
-                                    <!-- Las imágenes se cargarán dinámicamente aquí -->
+                            <p class="item-intro text-muted text-center" id="modalDescription"></p>
+                            
+                            <div class="row">
+                                <!-- Columna de la imagen principal y miniaturas -->
+                                <div class="col-lg-7">
+                                    <!-- Imagen principal estática (no carrusel) -->
+                                    <div class="main-image-container text-center mb-3">
+                                        <img id="mainProductImage" class="img-fluid" style="max-height: 350px; cursor: pointer;" alt="Imagen principal">
+                                    </div>
+                                    
+                                    <!-- Contenedor de miniaturas -->
+                                    <div id="thumbnailsContainer" class="d-flex justify-content-center flex-wrap" style="gap: 8px;">
+                                        <!-- Las miniaturas se cargarán dinámicamente aquí -->
+                                    </div>
                                 </div>
-                                <!-- Controles del carrusel -->
-                                <button class="carousel-control-prev" type="button" data-bs-target="#modalCarousel" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Anterior</span>
-                                </button>
-                                <button class="carousel-control-next" type="button" data-bs-target="#modalCarousel" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Siguiente</span>
-                                </button>
+                                
+                                <!-- Columna de selección y formulario -->
+                                <div class="col-lg-5">
+                                    <div class="product-options p-3">
+                                        <!-- Talla -->
+                                        <div class="mb-3">
+                                            <label for="tallaSelect" class="form-label fw-bold">Talla:</label>
+                                            <select id="tallaSelect" class="form-select">
+                                                <option value="" disabled selected>Selecciona talla</option>
+                                                <option value="32">32</option>
+                                                <option value="33">33</option>
+                                                <option value="34">34</option>
+                                                <option value="35">35</option>
+                                                <option value="36">36</option>
+                                                <option value="37">37</option>
+                                                <option value="38">38</option>
+                                                <option value="39">39</option>
+                                                <option value="40">40</option>
+                                                <option value="41">41</option>
+                                                <option value="42">42</option>
+                                                <option value="43">43</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Suela -->
+                                        <div class="mb-3">
+                                            <label for="suelaSelect" class="form-label fw-bold">Suela:</label>
+                                            <select id="suelaSelect" class="form-select">
+                                                <option value="" disabled selected>Selecciona suela</option>
+                                                <option value="Goma">Goma</option>
+                                                <option value="Colores">Colores</option>
+                                                <option value="Negra">Negra</option>
+                                                <option value="Sintética">Sintética</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Personalización -->
+                                        <div class="mb-3">
+                                            <p class="mb-2">¿Deseas ponerle nombre y número de jugador a tus zapatillas?</p>
+                                            <div class="d-flex gap-4 mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="personalizacionRadio" id="personalizacionSi" value="si">
+                                                    <label class="form-check-label" for="personalizacionSi">Sí</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="personalizacionRadio" id="personalizacionNo" value="no">
+                                                    <label class="form-check-label" for="personalizacionNo">No</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Campos de personalización (inicialmente ocultos) -->
+                                        <div id="camposPersonalizacion" class="mb-3" style="display: none;">
+                                            <div class="mb-3">
+                                                <label for="nombreJugador" class="form-label fw-bold">Nombre del Jugador:</label>
+                                                <input type="text" class="form-control" id="nombreJugador" placeholder="Ingresa el nombre">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="numeroJugador" class="form-label fw-bold">Número del Jugador:</label>
+                                                <input type="number" class="form-control" id="numeroJugador" placeholder="Ingresa el número">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Botón de agregar al carrito -->
+                                        <div class="mt-4">
+                                            <button id="btnAgregarCarrito" class="btn btn-secondary w-100" disabled>
+                                                Agregar al Carrito!
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -434,7 +505,7 @@
                 <p id="alertMessage" class="mb-0">Mensaje de alerta</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-dark" id="alertAcceptButton">Aceptar</button>
+                <button type="button" class="btn btn-dark" id="alertAcceptButton" data-bs-dismiss="modal">Aceptar</button>
             </div>
         </div>
     </div>
