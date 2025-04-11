@@ -33,6 +33,17 @@ function scrollToFormulario() {
     }
 }
 
+// Función para el comportamiento del navbar al hacer scroll
+const navbarShrink = () => {
+    const navbarCollapsible = document.body.querySelector('#mainNav');
+    if (!navbarCollapsible) return;
+    if (window.scrollY === 0) {
+        navbarCollapsible.classList.remove('navbar-shrink');
+    } else {
+        navbarCollapsible.classList.add('navbar-shrink');
+    }
+};
+
 // Elementos del DOM
 const resumenProductos = document.getElementById('resumenProductos');
 const totalPedido = document.getElementById('totalPedido');
@@ -261,8 +272,11 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Hacer scroll al formulario cuando se carga la página
+// Aplicar navbar shrink al cargar y al hacer scroll
 document.addEventListener('DOMContentLoaded', () => {
+    navbarShrink();
+    document.addEventListener('scroll', navbarShrink);
+    
     // Pequeño retraso para asegurar que todo el contenido esté cargado
     setTimeout(scrollToFormulario, 100);
 }); 

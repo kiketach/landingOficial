@@ -1255,3 +1255,15 @@ header.masthead .masthead-subheading {
   }
 }
 
+/* Estilos para el botón de volver al inicio */
+.btn-volver {
+    color: white !important;
+    border-color: white !important;
+    transition: all 0.3s ease;
+}
+
+.btn-volver:hover {
+    color: #212529 !important;
+    background-color: white !important;
+}
+
