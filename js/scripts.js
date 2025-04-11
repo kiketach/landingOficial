@@ -175,6 +175,10 @@ window.carrito = [];
             const carouselItems = document.getElementById('carouselItems');
             carouselItems.innerHTML = '';
   
+            // Crear una variable para almacenar las miniaturas
+            let thumbnailsHTML = '';
+            
+            // Generar el HTML para cada imagen
             images.forEach((image, index) => {
                 const carouselItem = document.createElement('div');
                 carouselItem.classList.add('carousel-item');
@@ -188,9 +192,11 @@ window.carrito = [];
                 imgContainer.style.textAlign = 'center';
                 imgContainer.style.marginBottom = '15px';
                 imgContainer.style.cursor = 'pointer';
+                imgContainer.id = `main-image-container-${index}`;
 
                 const img = document.createElement('img');
                 img.src = `assets/img/portfolio/${image}`;
+                img.id = `main-image-${index}`;
                 img.alt = title;
                 img.style.maxHeight = '220px';
                 img.style.width = 'auto';
@@ -228,6 +234,56 @@ window.carrito = [];
 
                 imgContainer.appendChild(img);
                 modalContent.appendChild(imgContainer);
+                
+                // Crear el contenedor de miniaturas para cada slide
+                const thumbnailsContainer = document.createElement('div');
+                thumbnailsContainer.classList.add('thumbnails-container');
+                thumbnailsContainer.style.display = 'flex';
+                thumbnailsContainer.style.justifyContent = 'center';
+                thumbnailsContainer.style.flexWrap = 'wrap';
+                thumbnailsContainer.style.gap = '5px';
+                thumbnailsContainer.style.maxWidth = '100%';
+                thumbnailsContainer.style.marginBottom = '20px';
+                thumbnailsContainer.style.overflowX = 'auto';
+                thumbnailsContainer.style.padding = '5px 0';
+                
+                // Añadir todas las miniaturas a cada slide
+                images.forEach((thumbImage, thumbIndex) => {
+                    const thumbnail = document.createElement('div');
+                    thumbnail.style.width = '60px';
+                    thumbnail.style.height = '60px';
+                    thumbnail.style.cursor = 'pointer';
+                    thumbnail.style.border = thumbIndex === index ? '2px solid #ffc800' : '2px solid transparent';
+                    thumbnail.style.borderRadius = '4px';
+                    thumbnail.style.overflow = 'hidden';
+                    thumbnail.style.transition = 'all 0.2s ease';
+                    thumbnail.style.flexShrink = '0';
+                    
+                    const thumbImg = document.createElement('img');
+                    thumbImg.src = `assets/img/portfolio/${thumbImage}`;
+                    thumbImg.alt = `Miniatura ${thumbIndex + 1}`;
+                    thumbImg.style.width = '100%';
+                    thumbImg.style.height = '100%';
+                    thumbImg.style.objectFit = 'cover';
+                    
+                    thumbnail.appendChild(thumbImg);
+                    
+                    // Evento al hacer clic en una miniatura
+                    thumbnail.addEventListener('click', () => {
+                        // Si estamos en el mismo slide, solo cambiar la imagen principal
+                        if (index === thumbIndex) {
+                            return;
+                        }
+                        
+                        // Si estamos en otro slide, activar ese slide del carrusel
+                        const carousel = new bootstrap.Carousel(document.getElementById('modalCarousel'));
+                        carousel.to(thumbIndex);
+                    });
+                    
+                    thumbnailsContainer.appendChild(thumbnail);
+                });
+                
+                modalContent.appendChild(thumbnailsContainer);
 
                 // Contenedor de selección
                 const selectionContainer = document.createElement('div');
@@ -491,6 +547,24 @@ window.carrito = [];
             const modalElement = document.getElementById('portfolioModal');
             const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modal.show();
+            
+            // Agregar un evento para el cambio de slide del carrusel
+            const carouselElement = document.getElementById('modalCarousel');
+            carouselElement.addEventListener('slid.bs.carousel', function (event) {
+                // Obtener el índice del slide activo
+                const activeIndex = event.to;
+                
+                // Actualizar todas las miniaturas en todos los slides
+                document.querySelectorAll('.thumbnails-container > div').forEach((thumb, idx) => {
+                    if (idx % images.length === activeIndex) {
+                        thumb.style.border = '2px solid #ffc800';
+                        thumb.classList.add('active');
+                    } else {
+                        thumb.style.border = '2px solid transparent';
+                        thumb.classList.remove('active');
+                    }
+                });
+            });
         });
     });
   
