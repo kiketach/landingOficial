@@ -591,7 +591,7 @@ window.carrito = [];
             
             // Guardar el carrito en localStorage antes de redirigir
             localStorage.setItem('carritoTemp', JSON.stringify(window.carrito));
-            window.location.href = 'compra.html';
+            window.location.href = 'compra.html#formulario-compra';
         });
     }
 });
@@ -600,6 +600,7 @@ window.carrito = [];
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import firebaseConfig from './config.js';
 
 // Variables globales
 window.carrito = [];
@@ -607,32 +608,15 @@ let firebaseInitialized = false;
 let auth = null;
 let db = null;
 
-// Obtener la configuración de Firebase desde la función
+// Inicializar Firebase usando la configuración local
 async function initializeFirebase() {
   try {
-    console.log('Iniciando obtención de configuración de Firebase...');
-    const response = await fetch('https://us-central1-hat-trick-9319c.cloudfunctions.net/getFirebaseConfig');
-    console.log('Respuesta recibida:', response);
-    
-    if (!response.ok) {
-      throw new Error(`Error al obtener la configuración de Firebase: ${response.status} ${response.statusText}`);
-    }
-    
-    const firebaseConfig = await response.json();
-    console.log('Configuración de Firebase obtenida:', firebaseConfig);
-    
-    if (!firebaseConfig.apiKey) {
-      throw new Error('La configuración de Firebase no contiene apiKey');
-    }
-    
     const app = initializeApp(firebaseConfig);
-    auth = getAuth(app);  // Asignar a la variable global
-    db = getFirestore(app);  // Asignar a la variable global
-    
-    console.log('Firebase inicializado correctamente');
+    auth = getAuth(app);
+    db = getFirestore(app);
     return { app, auth, db };
   } catch (error) {
-    console.error('Error detallado al inicializar Firebase:', error);
+    console.error('Error de inicialización');
     return null;
   }
 }
@@ -641,7 +625,6 @@ async function initializeFirebase() {
 initializeFirebase()
   .then(({ app }) => {
     firebaseInitialized = true;
-    console.log('Firebase está listo para usar');
     
     // Eventos de inicio de sesión
     const googleLoginBtn = document.getElementById('googleLogin');
@@ -771,7 +754,7 @@ initializeFirebase()
                 loginButton.setAttribute('data-bs-target', '#loginModal');
             }
             if (loginButtonMobile) {
-                loginButtonMobile.textContent = 'Entrar';
+                loginButtonMobile.textContent = 'Iniciar Sesión';
                 loginButtonMobile.setAttribute('data-bs-toggle', 'modal');
                 loginButtonMobile.setAttribute('data-bs-target', '#loginModal');
             }

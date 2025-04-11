@@ -17,6 +17,22 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// Función para hacer scroll a la sección de formulario
+function scrollToFormulario() {
+    const formularioSection = document.getElementById('formulario-compra');
+    if (formularioSection) {
+        const navbarHeight = document.getElementById('mainNav').offsetHeight;
+        const headerHeight = document.querySelector('.masthead').offsetHeight;
+        const offset = navbarHeight + headerHeight;
+        const targetPosition = formularioSection.offsetTop - offset;
+        
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+    }
+}
+
 // Elementos del DOM
 const resumenProductos = document.getElementById('resumenProductos');
 const totalPedido = document.getElementById('totalPedido');
@@ -236,15 +252,17 @@ if (formularioEntrega) {
     });
 }
 
-// Esperar a que Firebase inicialice antes de cargar los datos
-let authInitialized = false;
-onAuthStateChanged(auth, (user) => {
-    if (!authInitialized) {
-        authInitialized = true;
-        if (user) {
-            cargarDatosUsuario(user);
-        } else {
-            mostrarAlerta('Inicio de sesión requerido', 'Debes iniciar sesión para realizar una compra. Serás redirigido a la página principal.', true);
-        }
+// Observador del estado de autenticación
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        await cargarDatosUsuario(user);
+    } else {
+        mostrarAlerta('Error de sesión', 'Debes iniciar sesión para continuar', true);
     }
+});
+
+// Hacer scroll al formulario cuando se carga la página
+document.addEventListener('DOMContentLoaded', () => {
+    // Pequeño retraso para asegurar que todo el contenido esté cargado
+    setTimeout(scrollToFormulario, 100);
 }); 

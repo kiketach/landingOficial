@@ -1019,7 +1019,7 @@ header.masthead .masthead-subheading {
   position: relative;
   float: right;
   width: 100%;
-  padding: 0 20px 0 100px;
+  padding: 0 20px 0 140px;
   text-align: left;
 }
 .timeline > li .timeline-panel:before {
@@ -1211,5 +1211,47 @@ header.masthead .masthead-subheading {
 /* Tamaño de íconos de inicio sesion */
 .modal-body .btn i {
     font-size: 2.5rem; 
+}
+
+/* Ajustes específicos para móvil */
+@media (max-width: 767px) {
+  .timeline > li {
+    margin-bottom: 70px;  /* Aumentamos el margen entre elementos */
+    padding-top: 140px;   /* Espacio para la imagen */
+    position: relative;
+  }
+
+  .timeline > li .timeline-panel {
+    padding: 20px;        /* Simplificamos el padding */
+    text-align: center;
+    float: none;         /* Eliminamos el float */
+    width: 100%;
+  }
+  
+  .timeline > li .timeline-image {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-left: 0;
+  }
+  
+  .timeline:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Aseguramos que los elementos invertidos también sigan el mismo patrón */
+  .timeline > li.timeline-inverted > .timeline-panel {
+    padding: 20px;
+    text-align: center;
+    float: none;
+    width: 100%;
+  }
+
+  /* Ajustamos el espacio entre la imagen y el texto */
+  .timeline .timeline-heading {
+    margin-top: 15px;
+  }
 }
 
