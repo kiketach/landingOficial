@@ -471,6 +471,10 @@ window.carrito = [];
                         producto.numero = numeroInput.value.trim();
                     }
 
+                    if (!verificarLoginYAgregar(producto)) {
+                        return;
+                    }
+
                     window.carrito.push(producto);
                     await window.actualizarCarrito();
                     showSuccessModal();
@@ -792,6 +796,37 @@ initializeFirebase()
             alert(errorMessage);
         }
     };
+
+    // Función para abrir el modal de login desde el modal de requerimiento
+    function abrirModalLogin() {
+        // Cerrar el modal de requerimiento
+        const requireLoginModal = bootstrap.Modal.getInstance(document.getElementById('requireLoginModal'));
+        requireLoginModal.hide();
+        
+        // Abrir el modal de login
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+    }
+
+    // Función para verificar si el usuario está logueado antes de agregar al carrito
+    function verificarLoginYAgregar(producto) {
+        // Verificar si el usuario está logueado usando Firebase Auth
+        const user = auth.currentUser;
+        
+        if (!user) {
+            // Mostrar el modal de requerimiento de login
+            const requireLoginModal = new bootstrap.Modal(document.getElementById('requireLoginModal'));
+            requireLoginModal.show();
+            return false;
+        }
+        
+        // Si está logueado, proceder con la adición al carrito
+        return true;
+    }
+
+    // Exponer la función para que esté disponible globalmente
+    window.abrirModalLogin = abrirModalLogin;
+    window.verificarLoginYAgregar = verificarLoginYAgregar;
   })
   .catch(error => {
     console.error('Error en la inicialización de Firebase:', error);
