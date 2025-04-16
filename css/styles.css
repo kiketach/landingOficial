@@ -631,22 +631,11 @@ button:not(:disabled),
 
 /* Estilos específicos para el modal del portfolio */
 .portfolio-modal .modal-dialog {
-  margin: 1rem auto;
+  margin: 0.5rem auto;
   max-width: 800px;
   height: auto;
   display: flex;
   align-items: center;
-}
-
-.portfolio-modal .modal-content {
-  padding: 1rem;
-  text-align: center;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.15);
-  height: auto;
-  display: flex;
-  flex-direction: column;
 }
 
 .portfolio-modal .modal-body {
@@ -654,7 +643,7 @@ button:not(:disabled),
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.10rem;
   height: auto;
 }
 
@@ -673,31 +662,32 @@ button:not(:disabled),
 
 /* Ajustes de espaciado para el contenido del modal */
 .portfolio-modal h2 {
-  margin: 0.25rem 0;
-  font-size: 1.5rem;
+  margin: 0;
+  padding: 0;
+  font-size: 1.4rem;
 }
 
 .portfolio-modal .item-intro {
-  margin: 0.25rem 0;
+  margin: 0;
   font-size: 0.9rem;
 }
 
 /* Estilos para los formularios dentro del modal */
-.portfolio-modal .form-select {
-  max-width: 180px;
-  margin: 0.25rem auto;
-  font-size: 0.9rem;
-  height: 35px;
-  padding: 0.25rem 0.5rem;
-}
-
 .portfolio-modal .form-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   margin-bottom: 0.5rem;
 }
 
-.portfolio-modal label {
-  margin-bottom: 0.25rem;
-  font-size: 0.9rem;
+.portfolio-modal .form-group label {
+  margin-bottom: 0;
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.portfolio-modal .form-select {
+  flex: 1;
 }
 
 /* Controles del carrusel */
@@ -723,10 +713,6 @@ button:not(:disabled),
     margin: 0.5rem;
   }
   
-  .portfolio-modal .modal-content {
-    padding: 0.5rem;
-  }
-  
   .portfolio-modal .modal-content img {
     max-height: 250px;
   }
@@ -743,31 +729,75 @@ button:not(:disabled),
     max-width: 160px;
     font-size: 0.85rem;
   }
+  
+  /* Ajustes para evitar que se corten las palabras en vista móvil */
+  .portfolio-modal .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .portfolio-modal .form-group label {
+    margin-bottom: 5px;
+    width: 100%;
+  }
+  
+  .portfolio-modal .form-select {
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 /* Ajuste para el botón de cerrar */
 .portfolio-modal .btn-close {
   position: absolute;
-  right: 0.5rem;
-  top: 0.5rem;
-  z-index: 1;
-  background-color: white;
-  padding: 0.35rem;
+  right: 1.5rem;
+  top: 1.5rem;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: #000;
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  opacity: 0.8;
+  z-index: 2000;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portfolio-modal .btn-close::before,
+.portfolio-modal .btn-close::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 2px;
+  background-color: white;
+}
+
+.portfolio-modal .btn-close::before {
+  transform: rotate(45deg);
+}
+
+.portfolio-modal .btn-close::after {
+  transform: rotate(-45deg);
+}
+
+.portfolio-modal .btn-close:hover {
+  opacity: 1;
+  transform: rotate(90deg);
 }
 
 /* Estilos para las miniaturas del modal de portfolio */
 .thumbnails-container {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 10px;
   padding: 5px;
-  overflow-x: auto;
+  margin-top: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
   max-width: 100%;
-  scrollbar-width: thin;
+  justify-items: center;
 }
 
 .thumbnails-container::-webkit-scrollbar {
@@ -789,22 +819,25 @@ button:not(:disabled),
 }
 
 .thumbnails-container > div {
-  width: 60px;
-  height: 60px;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  overflow: hidden;
+  width: 80px;
+  height: 80px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .thumbnails-container > div:hover {
   transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .thumbnails-container > div.active {
   border-color: #ffc800;
+  box-shadow: 0 0 0 2px #ffc800;
 }
 
 .thumbnails-container > div img {
@@ -1077,7 +1110,7 @@ header.masthead .masthead-subheading {
     font-size: 2.25rem;
     font-style: italic;
     line-height: 2.25rem;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
   }
 }
 #portfolio .portfolio-item {
@@ -1443,5 +1476,182 @@ header.masthead .masthead-subheading {
   color: #495057;
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
+}
+
+/* Efecto Glassmorphism para Modal Portfolio */
+.portfolio-modal .modal-dialog {
+    max-width: 90%;
+}
+
+.portfolio-modal .modal-content {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important;
+  position: relative;
+  padding-top: 2rem;
+}
+
+/* Efecto para la imagen principal */
+.portfolio-modal .main-image-container {
+    background: rgba(255, 255, 255, 0.4);
+    padding: 0.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.25rem;
+    text-align: center;
+    max-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#mainProductImage {
+    max-height: 350px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+/* Contenedor de miniaturas mejorado */
+#thumbnailsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px;
+    margin-top: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    max-width: 100%;
+}
+
+#thumbnailsContainer > div {
+    width: 70px;
+    height: 70px;
+    flex: 0 0 auto;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#thumbnailsContainer > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#thumbnailsContainer > div.active {
+    border-color: #ffc800;
+    box-shadow: 0 0 0 2px #ffc800;
+}
+
+#thumbnailsContainer > div img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Ajustes responsive para las miniaturas */
+@media (max-width: 768px) {
+    #thumbnailsContainer {
+        gap: 6px;
+        padding: 8px;
+    }
+    
+    #thumbnailsContainer > div {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Efecto para el formulario */
+.portfolio-modal .product-options {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    padding: 2rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+}
+
+/* Estilizar los selects y inputs */
+.portfolio-modal .form-select,
+.portfolio-modal .form-control {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* Botón cerrar personalizado */
+.portfolio-modal .btn-close {
+    position: absolute;
+    right: 1.5rem;
+    top: 1.5rem;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 1rem;
+    border-radius: 50%;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 2000;
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.portfolio-modal .btn-close:hover {
+    background: rgba(0, 0, 0, 1);
+    transform: rotate(90deg);
+    transition: all 0.3s ease;
+}
+
+/* Ajuste para el contenedor de la imagen y miniaturas */
+.portfolio-modal .col-lg-7 {
+    margin-bottom: 2rem;
+}
+
+/* Ajuste para el contenedor del formulario */
+.portfolio-modal .col-lg-5 {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Personalización del botón de agregar al carrito */
+#btnAgregarCarrito {
+    background: linear-gradient(135deg, #ffc800 0%, #ff8c00 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+#btnAgregarCarrito:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 200, 0, 0.3);
+}
+
+#btnAgregarCarrito:disabled {
+    background: linear-gradient(135deg, #cccccc 0%, #999999 100%);
+    cursor: not-allowed;
+}
+
+/* Ajustes responsive */
+@media (max-width: 991px) {
+    .portfolio-modal .product-options {
+        margin-top: 2rem;
+    }
+    
+    #thumbnailsContainer {
+        margin-bottom: 1rem;
+    }
 }
 

@@ -191,15 +191,9 @@ window.carrito = [];
             
             images.forEach((image, index) => {
                 const thumbnail = document.createElement('div');
-                thumbnail.style.width = '70px';
-                thumbnail.style.height = '70px';
                 thumbnail.style.cursor = 'pointer';
-                thumbnail.style.border = index === 0 ? '2px solid #ffc800' : '2px solid transparent';
-                thumbnail.style.borderRadius = '4px';
-                thumbnail.style.overflow = 'hidden';
-                thumbnail.style.transition = 'all 0.2s ease';
-                thumbnail.setAttribute('data-image-index', index);
                 
+                // Crear la imagen en miniatura
                 const thumbImg = document.createElement('img');
                 thumbImg.src = `assets/img/portfolio/${image}`;
                 thumbImg.alt = `Miniatura ${index + 1}`;
@@ -209,50 +203,40 @@ window.carrito = [];
                 
                 thumbnail.appendChild(thumbImg);
                 
+                // Marcar la primera miniatura como activa
+                if (index === 0) {
+                    thumbnail.classList.add('active');
+                }
+                
                 // Evento al hacer clic en una miniatura
                 thumbnail.addEventListener('click', (e) => {
-                    // Actualizar la imagen principal
-                    mainImageClone.src = `assets/img/portfolio/${image}`;
+                    e.preventDefault();
                     
-                    // Actualizar el borde de las miniaturas
+                    // Remover la clase active de todas las miniaturas
                     thumbnailsContainer.querySelectorAll('div').forEach(thumb => {
-                        thumb.style.border = '2px solid transparent';
+                        thumb.classList.remove('active');
                     });
-                    thumbnail.style.border = '2px solid #ffc800';
+                    
+                    // Agregar la clase active a la miniatura seleccionada
+                    thumbnail.classList.add('active');
+                    
+                    // Actualizar la imagen principal con efecto de transición
+                    mainImageClone.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        mainImageClone.src = `assets/img/portfolio/${image}`;
+                        mainImageClone.style.opacity = '1';
+                        
+                        // Hacer scroll suave hacia la imagen principal
+                        mainImageClone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 150);
                 });
                 
                 thumbnailsContainer.appendChild(thumbnail);
             });
 
-            // Función para mostrar imagen ampliada
-            function showZoomedImage(src) {
-                const modal = document.createElement('div');
-                modal.style.position = 'fixed';
-                modal.style.top = '0';
-                modal.style.left = '0';
-                modal.style.width = '100%';
-                modal.style.height = '100%';
-                modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-                modal.style.display = 'flex';
-                modal.style.justifyContent = 'center';
-                modal.style.alignItems = 'center';
-                modal.style.zIndex = '9999';
-                modal.style.cursor = 'pointer';
-
-                const enlargedImg = document.createElement('img');
-                enlargedImg.src = src;
-                enlargedImg.style.maxWidth = '90%';
-                enlargedImg.style.maxHeight = '90vh';
-                enlargedImg.style.objectFit = 'contain';
-
-                modal.appendChild(enlargedImg);
-                document.body.appendChild(modal);
-
-                // Cerrar al hacer clic en cualquier parte
-                modal.addEventListener('click', () => {
-                    document.body.removeChild(modal);
-                });
-            }
+            // Asegurar que la imagen principal tenga transición suave
+            mainImageClone.style.transition = 'opacity 0.3s ease';
             
             // Configurar los campos de formulario y validaciones
             const tallaSelect = document.getElementById('tallaSelect');
